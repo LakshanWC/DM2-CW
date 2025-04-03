@@ -1,26 +1,63 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
-function Login() {
+function Login({ handleLogin: handleParentLogin }) {
     const [isLoginHoverd, setLoginHoverd] = useState(false);
     const [isRegisterHoverd, setRegisterHoverd] = useState(false);
+    const [username, setUsername] = useState("");
+    const [password, setPassword] = useState("");
+    const [role, setRole] = useState("customer");
+    const [errors, setErrors] = useState({});
+    const navigate = useNavigate();
+
+    const handleRegisterOnClick = () => {
+        navigate("/register");
+    };
+
+    const handleUserLogin = () => {  // Renamed from handleLogin to handleUserLogin
+        const validationErrors = {};
+
+        if (!username) {
+            validationErrors.username = "Username is required";
+        }
+
+        if (!password) {
+            validationErrors.password = "Password is required";
+        }
+
+        setErrors(validationErrors);
+
+        if (Object.keys(validationErrors).length === 0) {
+            // If username and password are provided, navigate to /home
+            if (username && password) {
+                handleParentLogin(username, true);
+                navigate("/home");
+            } else {
+                handleParentLogin(null, false);
+                alert("Invalid login credentials!");
+            }
+        }
+    };
 
     return (
         <div style={LoginComponentStyle.pageBackground}>
             <div style={LoginComponentStyle.componentBox}>
-                {/* Title Box */}
                 <div style={LoginComponentStyle.titleBox}>
                     <h2 style={LoginComponentStyle.title}>Welcome to UrbanFood</h2>
                 </div>
 
-                {/* User Role Selector */}
                 <div style={LoginComponentStyle.formGroup}>
                     <label style={LoginComponentStyle.label}>Login as:</label>
-                    <select style={LoginComponentStyle.select}>
+                    <select
+                        style={LoginComponentStyle.select}
+                        value={role}
+                        onChange={(e) => setRole(e.target.value)}
+                    >
                         <option value="customer">Customer</option>
                         <option value="supplier">Supplier</option>
                         <option value="admin">Admin</option>
                     </select>
+                    {errors.role && <p style={LoginComponentStyle.errorText}>{errors.role}</p>}
                 </div>
 
                 <div style={LoginComponentStyle.formGroup}>
@@ -29,7 +66,10 @@ function Login() {
                         type="text"
                         style={LoginComponentStyle.input}
                         placeholder="Enter your username"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
                     />
+                    {errors.username && <p style={LoginComponentStyle.errorText}>{errors.username}</p>}
                 </div>
                 <div style={LoginComponentStyle.formGroup}>
                     <label style={LoginComponentStyle.label}>Password:</label>
@@ -37,7 +77,10 @@ function Login() {
                         type="password"
                         style={LoginComponentStyle.input}
                         placeholder="Enter your password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
                     />
+                    {errors.password && <p style={LoginComponentStyle.errorText}>{errors.password}</p>}
                 </div>
 
                 <div style={LoginComponentStyle.buttonGroup}>
@@ -45,6 +88,7 @@ function Login() {
                         style={isLoginHoverd ? LoginComponentStyle.btnLoginHover : LoginComponentStyle.btnLogin}
                         onMouseEnter={() => setLoginHoverd(true)}
                         onMouseLeave={() => setLoginHoverd(false)}
+                        onClick={handleUserLogin}
                     >
                         Login
                     </button>
@@ -53,6 +97,7 @@ function Login() {
                         style={isRegisterHoverd ? LoginComponentStyle.btnRegisterHover : LoginComponentStyle.btnRegister}
                         onMouseEnter={() => setRegisterHoverd(true)}
                         onMouseLeave={() => setRegisterHoverd(false)}
+                        onClick={handleRegisterOnClick}
                     >
                         Register
                     </button>
@@ -67,6 +112,7 @@ function Login() {
 }
 
 export default Login;
+
 
 const LoginComponentStyle = {
     pageBackground: {
@@ -128,6 +174,7 @@ const LoginComponentStyle = {
         borderRadius: "6px",
         border: "1px solid #ccc",
         fontSize: "15px",
+        boxSizing: "border-box", // Ensures padding does not cause overflow
         transition: "border 0.3s",
     },
     buttonGroup: {
@@ -195,5 +242,11 @@ const LoginComponentStyle = {
         fontSize: "14px",
         fontWeight: "500",
         transition: "color 0.2s",
+    },
+    errorText: {
+        color: "#e74c3c",
+        fontSize: "12px",
+        marginTop: "5px",
+        textAlign: "left"
     }
 };
