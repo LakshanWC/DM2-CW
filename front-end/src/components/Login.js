@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
 
 function Login({ handleLogin: handleParentLogin }) {
     const [isLoginHoverd, setLoginHoverd] = useState(false);
@@ -7,49 +8,90 @@ function Login({ handleLogin: handleParentLogin }) {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [role, setRole] = useState("customer");
-    const [errors, setErrors] = useState({});
+    const [errors, setErrors] = useState({
+        username: "",
+        password: "",
+        api: ""
+    });
+    const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
 
     const handleRegisterOnClick = () => {
         navigate("/register");
     };
 
-    const handleUserLogin = () => {  // Renamed from handleLogin to handleUserLogin
-        const validationErrors = {};
+    const handleUserLogin = async () => {
+        // Reset errors
+        setErrors({
+            username: "",
+            password: "",
+            api: ""
+        });
 
-        if (!username) {
-            validationErrors.username = "Username is required";
+        // Validate inputs
+        const newErrors = {};
+        if (!username) newErrors.username = "Username is required";
+        if (!password) newErrors.password = "Password is required";
+
+        if (Object.keys(newErrors).length > 0) {
+            setErrors(newErrors);
+            return;
         }
 
-        if (!password) {
-            validationErrors.password = "Password is required";
-        }
+        setIsLoading(true);
 
-        setErrors(validationErrors);
+        try {
+            if (role === "admin") {
+                const response = await axios.get("http://localhost:8081/users", {
+                    params: {
+                        username: username,
+                        password: password,
+                        role: role
+                    }
+                });
 
-        if (Object.keys(validationErrors).length === 0) {
-            // If username and password are provided, navigate to /home
-            if (username && password) {
-                handleParentLogin(username, true);
-                navigate("/home");
+                if (response.data === "Valid user") {
+                    handleParentLogin(username, true, "admin");
+                    navigate("/admin-dashboard");
+                } else {
+                    setErrors(prev => ({
+                        ...prev,
+                        api: "Invalid admin credentials!"
+                    }));
+                }
             } else {
-                handleParentLogin(null, false);
-                alert("Invalid login credentials!");
+                handleParentLogin(username, true, role);
+                navigate("/home");
             }
+        } catch (error) {
+            setErrors(prev => ({
+                ...prev,
+                api: "An error occurred during login. Please try again."
+            }));
+            console.error("Login error:", error);
+        } finally {
+            setIsLoading(false);
         }
     };
 
     return (
-        <div style={LoginComponentStyle.pageBackground}>
-            <div style={LoginComponentStyle.componentBox}>
-                <div style={LoginComponentStyle.titleBox}>
-                    <h2 style={LoginComponentStyle.title}>Welcome to UrbanFood</h2>
+        <div style={styles.pageBackground}>
+            <div style={styles.componentBox}>
+                <div style={styles.titleBox}>
+                    <h2 style={styles.title}>Welcome to UrbanFood</h2>
                 </div>
 
-                <div style={LoginComponentStyle.formGroup}>
-                    <label style={LoginComponentStyle.label}>Login as:</label>
+                {/* API Error Message */}
+                {errors.api && (
+                    <div style={styles.apiErrorBox}>
+                        {errors.api}
+                    </div>
+                )}
+
+                <div style={styles.formGroup}>
+                    <label style={styles.label}>Login as:</label>
                     <select
-                        style={LoginComponentStyle.select}
+                        style={styles.select}
                         value={role}
                         onChange={(e) => setRole(e.target.value)}
                     >
@@ -57,44 +99,45 @@ function Login({ handleLogin: handleParentLogin }) {
                         <option value="supplier">Supplier</option>
                         <option value="admin">Admin</option>
                     </select>
-                    {errors.role && <p style={LoginComponentStyle.errorText}>{errors.role}</p>}
                 </div>
 
-                <div style={LoginComponentStyle.formGroup}>
-                    <label style={LoginComponentStyle.label}>Username:</label>
+                <div style={styles.formGroup}>
+                    <label style={styles.label}>Username:</label>
                     <input
                         type="text"
-                        style={LoginComponentStyle.input}
+                        style={styles.input}
                         placeholder="Enter your username"
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
                     />
-                    {errors.username && <p style={LoginComponentStyle.errorText}>{errors.username}</p>}
+                    {errors.username && <p style={styles.errorText}>{errors.username}</p>}
                 </div>
-                <div style={LoginComponentStyle.formGroup}>
-                    <label style={LoginComponentStyle.label}>Password:</label>
+
+                <div style={styles.formGroup}>
+                    <label style={styles.label}>Password:</label>
                     <input
                         type="password"
-                        style={LoginComponentStyle.input}
+                        style={styles.input}
                         placeholder="Enter your password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                     />
-                    {errors.password && <p style={LoginComponentStyle.errorText}>{errors.password}</p>}
+                    {errors.password && <p style={styles.errorText}>{errors.password}</p>}
                 </div>
 
-                <div style={LoginComponentStyle.buttonGroup}>
+                <div style={styles.buttonGroup}>
                     <button
-                        style={isLoginHoverd ? LoginComponentStyle.btnLoginHover : LoginComponentStyle.btnLogin}
+                        style={isLoginHoverd ? styles.btnLoginHover : styles.btnLogin}
                         onMouseEnter={() => setLoginHoverd(true)}
                         onMouseLeave={() => setLoginHoverd(false)}
                         onClick={handleUserLogin}
+                        disabled={isLoading}
                     >
-                        Login
+                        {isLoading ? "Logging in..." : "Login"}
                     </button>
 
                     <button
-                        style={isRegisterHoverd ? LoginComponentStyle.btnRegisterHover : LoginComponentStyle.btnRegister}
+                        style={isRegisterHoverd ? styles.btnRegisterHover : styles.btnRegister}
                         onMouseEnter={() => setRegisterHoverd(true)}
                         onMouseLeave={() => setRegisterHoverd(false)}
                         onClick={handleRegisterOnClick}
@@ -103,18 +146,15 @@ function Login({ handleLogin: handleParentLogin }) {
                     </button>
                 </div>
 
-                <div style={LoginComponentStyle.linksContainer}>
-                    <Link to="/forgot-password" style={LoginComponentStyle.link}>Forgot Password?</Link>
+                <div style={styles.linksContainer}>
+                    <Link to="/forgot-password" style={styles.link}>Forgot Password?</Link>
                 </div>
             </div>
         </div>
     );
 }
 
-export default Login;
-
-
-const LoginComponentStyle = {
+const styles = {
     pageBackground: {
         width: "100vw",
         height: "100vh",
@@ -147,6 +187,16 @@ const LoginComponentStyle = {
         fontSize: "26px",
         fontWeight: "700"
     },
+    apiErrorBox: {
+        backgroundColor: "#fde8e8",
+        color: "#e74c3c",
+        padding: "12px",
+        borderRadius: "6px",
+        marginBottom: "20px",
+        border: "1px solid #f5c6cb",
+        textAlign: "center",
+        fontSize: "14px"
+    },
     formGroup: {
         marginBottom: "20px",
         textAlign: "left"
@@ -174,7 +224,7 @@ const LoginComponentStyle = {
         borderRadius: "6px",
         border: "1px solid #ccc",
         fontSize: "15px",
-        boxSizing: "border-box", // Ensures padding does not cause overflow
+        boxSizing: "border-box",
         transition: "border 0.3s",
     },
     buttonGroup: {
@@ -250,3 +300,5 @@ const LoginComponentStyle = {
         textAlign: "left"
     }
 };
+
+export default Login;
