@@ -14,13 +14,7 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
-    public String validateUser(String username, String password) {
-        try{
-         return userRepository.validateUser(username, password);
-        }
-        catch(Exception e){
-             log.error(e.getMessage());
-             return "Unexpected Error From Service";
-        }
+    public String validateUser(String username, String password, String role) {
+        return userRepository.validateUser(username, password, role);
     }
 }
