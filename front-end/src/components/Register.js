@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 function Register() {
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
+        name: '',
         username: '',
         password: '',
         phone: '',
@@ -27,6 +28,12 @@ function Register() {
 
     const validate = () => {
         const newErrors = {};
+
+        if (!formData.name.trim()) {
+            newErrors.name = 'Name is required';
+        } else if (formData.name.length < 2) {
+            newErrors.name = 'Name must be at least 2 characters';
+        }
 
         if (!formData.username.trim()) {
             newErrors.username = 'Username is required';
@@ -118,7 +125,23 @@ function Register() {
                         </div>
                     </div>
 
-                    {/* Rest of your form fields remain the same */}
+                    {/* Name Field */}
+                    <div style={styles.formGroup}>
+                        <label style={styles.label}>Name</label>
+                        <input
+                            type="text"
+                            name="name"
+                            placeholder="Enter your name"
+                            style={{
+                                ...styles.input,
+                                ...(errors.name && styles.inputError)
+                            }}
+                            value={formData.name}
+                            onChange={handleChange}
+                        />
+                        {errors.name && <div style={styles.errorContainer}><span style={styles.error}>{errors.name}</span></div>}
+                    </div>
+
                     <div style={styles.formGroup}>
                         <label style={styles.label}>Username</label>
                         <input
