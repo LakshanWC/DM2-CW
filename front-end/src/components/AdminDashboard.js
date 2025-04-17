@@ -8,16 +8,24 @@ function AdminDashboard({ username }) {
         navigate("/admin/users");
     };
 
-    const handleProductManagement = () => {
-        navigate("/admin/products");
+    const handleSupplierApproval = () => {
+        navigate("/admin/suppliers");
+    };
+
+    const handlePaymentHistory = () => {
+        navigate("/admin/payments");
+    };
+
+    const handleFeedbackManagement = () => {
+        navigate("/admin/feedbacks");
+    };
+
+    const handleReviewManagement = () => {
+        navigate("/admin/reviews");
     };
 
     const handleOrderManagement = () => {
         navigate("/admin/orders");
-    };
-
-    const handleReports = () => {
-        navigate("/admin/reports");
     };
 
     return (
@@ -36,19 +44,46 @@ function AdminDashboard({ username }) {
                     {/* User Management Card */}
                     <div style={styles.card} onClick={handleUserManagement}>
                         <div style={styles.cardIcon}>
-                            <i className="fas fa-users" style={styles.icon}></i>
+                            <i className="fas fa-user-cog" style={styles.icon}></i>
                         </div>
                         <h3 style={styles.cardTitle}>User Management</h3>
-                        <p style={styles.cardText}>Manage all users, roles and permissions</p>
+                        <p style={styles.cardText}>Remove users, manage roles and permissions</p>
                     </div>
 
-                    {/* Product Management Card */}
-                    <div style={styles.card} onClick={handleProductManagement}>
+                    {/* Supplier Approval Card */}
+                    <div style={styles.card} onClick={handleSupplierApproval}>
                         <div style={styles.cardIcon}>
-                            <i className="fas fa-boxes" style={styles.icon}></i>
+                            <i className="fas fa-check-circle" style={styles.icon}></i>
                         </div>
-                        <h3 style={styles.cardTitle}>Product Management</h3>
-                        <p style={styles.cardText}>Manage products and categories</p>
+                        <h3 style={styles.cardTitle}>Supplier Approval</h3>
+                        <p style={styles.cardText}>Approve or deny supplier applications</p>
+                    </div>
+
+                    {/* Payment History Card */}
+                    <div style={styles.card} onClick={handlePaymentHistory}>
+                        <div style={styles.cardIcon}>
+                            <i className="fas fa-money-bill-wave" style={styles.icon}></i>
+                        </div>
+                        <h3 style={styles.cardTitle}>Payment History</h3>
+                        <p style={styles.cardText}>View and manage payment records</p>
+                    </div>
+
+                    {/* Feedback Management Card */}
+                    <div style={styles.card} onClick={handleFeedbackManagement}>
+                        <div style={styles.cardIcon}>
+                            <i className="fas fa-comment-dots" style={styles.icon}></i>
+                        </div>
+                        <h3 style={styles.cardTitle}>Feedback Management</h3>
+                        <p style={styles.cardText}>Manage user feedback and suggestions</p>
+                    </div>
+
+                    {/* Review Management Card */}
+                    <div style={styles.card} onClick={handleReviewManagement}>
+                        <div style={styles.cardIcon}>
+                            <i className="fas fa-star-half-alt" style={styles.icon}></i>
+                        </div>
+                        <h3 style={styles.cardTitle}>Review Management</h3>
+                        <p style={styles.cardText}>Moderate product and service reviews</p>
                     </div>
 
                     {/* Order Management Card */}
@@ -57,16 +92,7 @@ function AdminDashboard({ username }) {
                             <i className="fas fa-clipboard-list" style={styles.icon}></i>
                         </div>
                         <h3 style={styles.cardTitle}>Order Management</h3>
-                        <p style={styles.cardText}>View and manage all orders</p>
-                    </div>
-
-                    {/* Reports Card */}
-                    <div style={styles.card} onClick={handleReports}>
-                        <div style={styles.cardIcon}>
-                            <i className="fas fa-chart-bar" style={styles.icon}></i>
-                        </div>
-                        <h3 style={styles.cardTitle}>Reports</h3>
-                        <p style={styles.cardText}>View system reports and analytics</p>
+                        <p style={styles.cardText}>View and manage all customer orders</p>
                     </div>
                 </div>
             </main>
