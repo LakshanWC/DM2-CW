@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Route, Routes, Link, Navigate } from "react-ro
 import Login from "./components/Login";
 import Register from "./components/Register";
 import Home from "./components/Home";
+import AdminDashboard from "./components/AdminDashboard";
 
 function App() {
     const [currentUser, setCurrentUser] = useState(null);
@@ -29,13 +30,24 @@ function App() {
                 {isLoggedIn && (
                     <nav style={styles.navbar}>
                         <div style={styles.navContainer}>
-                            <Link to="/home" style={styles.navBrand}>UrbanFood</Link>
+                            <Link to={role === "admin" ? "/admin-dashboard" : "/home"} style={styles.navBrand}>
+                                UrbanFood
+                            </Link>
                             <div style={styles.navLinks}>
-                                <NavButton to="/home" label="Dashboard" />
-                                {role === "farmer" && <NavButton to="/my-products" label="My Products" />}
-                                {role === "customer" && <NavButton to="/marketplace" label="Marketplace" />}
-                                <NavButton to="/account" label="My Account" />
-                                <NavButton to="/orders" label="My Orders" />
+                                {role === "admin" ? (
+                                    <>
+                                        <NavButton to="/admin-dashboard" label="Dashboard" />
+                                        <NavButton to="/admin/users" label="User Management" />
+                                    </>
+                                ) : (
+                                    <>
+                                        <NavButton to="/home" label="Dashboard" />
+                                        {role === "farmer" && <NavButton to="/my-products" label="My Products" />}
+                                        {role === "customer" && <NavButton to="/marketplace" label="Marketplace" />}
+                                        <NavButton to="/account" label="My Account" />
+                                        <NavButton to="/orders" label="My Orders" />
+                                    </>
+                                )}
                             </div>
                             <button onClick={handleLogout} style={{ ...styles.navButton, ...styles.logoutButton }}>
                                 Logout
@@ -45,9 +57,25 @@ function App() {
                 )}
 
                 <Routes>
-                    <Route path="/" element={isLoggedIn ? <Navigate to="/home" /> : <Login handleLogin={handleLogin} />} />
+                    <Route
+                        path="/"
+                        element={isLoggedIn ?
+                            (role === "admin" ?
+                                <Navigate to="/admin-dashboard" /> :
+                                <Navigate to="/home" />) :
+                            <Login handleLogin={handleLogin} />}
+                    />
                     <Route path="/register" element={<Register />} />
-                    <Route path="/home" element={isLoggedIn ? <Home username={username} role={role} /> : <Navigate to="/" />} />
+                    <Route
+                        path="/home"
+                        element={isLoggedIn ? <Home username={username} role={role} /> : <Navigate to="/" />}
+                    />
+                    <Route
+                        path="/admin-dashboard"
+                        element={isLoggedIn && role === "admin" ?
+                            <AdminDashboard username={username} /> :
+                            <Navigate to="/" />}
+                    />
                 </Routes>
             </Router>
         </div>
@@ -104,7 +132,7 @@ const styles = {
         fontSize: "1rem",
         fontWeight: "600",
         transition: "all 0.3s ease",
-        boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)"
+        boxShadow: "0 2px 5px rgba(0,0,0,0.1)"
     },
     logoutButton: {
         backgroundColor: "#e74c3c"
