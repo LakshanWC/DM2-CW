@@ -1,5 +1,6 @@
 package com.ecommerce.user_service.service;
 
+import com.ecommerce.user_service.dto.UserDTO;
 import com.ecommerce.user_service.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,5 +17,15 @@ public class UserService {
 
     public String validateUser(String username, String password, String role) {
         return userRepository.validateUser(username, password, role);
+    }
+
+    public String createUser(UserDTO userDTO) {
+        try {
+            return userRepository.createUser(userDTO.getName(),userDTO.getEmail(),userDTO.getAddress(),
+                    userDTO.getUsername(),userDTO.getPassword(),userDTO.getPhoneNo(),userDTO.getRole());
+        }
+        catch (Exception e) {
+            return "Something went wrong server side";
+        }
     }
 }
