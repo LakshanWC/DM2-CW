@@ -4,6 +4,7 @@ import Login from "./components/Login";
 import Register from "./components/Register";
 import Home from "./components/Home";
 import AdminDashboard from "./components/AdminDashboard";
+import UserManagement from "./components/UserManagement";
 
 function App() {
     const [currentUser, setCurrentUser] = useState(null);
@@ -74,6 +75,12 @@ function App() {
                         path="/admin-dashboard"
                         element={isLoggedIn && role === "admin" ?
                             <AdminDashboard username={username} /> :
+                            <Navigate to="/" />}
+                    />
+                    <Route
+                        path="/admin/users"
+                        element={isLoggedIn && role === "admin" ?
+                            <UserManagement /> :
                             <Navigate to="/" />}
                     />
                 </Routes>
