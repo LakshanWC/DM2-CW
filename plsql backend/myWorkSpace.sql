@@ -1,5 +1,24 @@
 ---------------------------------
-    --user creation--
+-- create a user to use by the api
+---------------------------------
+
+CREATE USER apiUser IDENTIFIED BY api123;
+GRANT CONNECT, RESOURCE TO apiUser;
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON SYSTEM.USERS TO apiUser;
+GRANT SELECT, INSERT, UPDATE, DELETE ON SYSTEM.ORDERS TO apiUser;
+GRANT SELECT, INSERT, UPDATE, DELETE ON SYSTEM.SUPPLIERS TO apiUser;
+GRANT SELECT, INSERT, UPDATE, DELETE ON SYSTEM.ORDER_DETAILS TO apiUser;
+GRANT SELECT, INSERT, UPDATE, DELETE ON SYSTEM.CUSTOMERS TO apiUser;
+GRANT SELECT, INSERT, UPDATE, DELETE ON SYSTEM.PAYMENTS TO apiUser;
+GRANT EXECUTE ON SYSTEM.SAVEORDER TO apiUser;
+
+
+
+
+
+---------------------------------
+    --user creation/registration--
 ---------------------------------
 
 CREATE OR REPLACE PROCEDURE createUser(
@@ -125,7 +144,153 @@ END;
 
 select * from products;
 
+----------------------------------------
+--make an order
+----------------------------------------
 
+CREATE OR REPLACE FUNCTION saveOrder( 
+    p_orderdate      DATE,
+    p_paymenttype    VARCHAR2,
+    p_userid         VARCHAR2,
+    p_productjson    CLOB
+) 
+RETURN VARCHAR2
+IS
+    qurry         VARCHAR2(2000);
+    total         NUMBER(10,2) := 0;
+    orderID       NUMBER := 0;
+    customerID    VARCHAR2(30);
+    orderDetailID NUMBER := 0;
+BEGIN
+    -- Generate new Order ID
+    SELECT NVL(MAX(ORDERID), 0) + 1 INTO orderID FROM ORDERS;
+
+    -- Get customer ID
+    SELECT CUSTOMERID INTO customerID FROM CUSTOMERS WHERE USERID = p_userid;
+
+    -- Insert blank order record first
+    qurry := 'INSERT INTO ORDERS (ORDERID, ORDERDATE, TOTALAMOUNT, PAYMENTTYPE, CUSTOMERID) 
+              VALUES (:1, :2, :3, :4, :5)';
+    EXECUTE IMMEDIATE qurry USING orderID, p_orderdate, total, p_paymenttype, customerID;
+
+    -- Get last ORDERDETAILID
+    SELECT NVL(MAX(ORDERDETAILID), 0) INTO orderDetailID FROM ORDER_DETAILS;
+
+    -- Use JSON_TABLE to loop through parsed products
+    FOR rec IN (
+        SELECT *
+        FROM JSON_TABLE(
+            p_productjson,
+            '$[*]' COLUMNS (
+            productid  VARCHAR2(50) PATH '$.productId',
+            quantity   NUMBER       PATH '$.quantity',
+            subtotal   NUMBER       PATH '$.subtotal'
+            )
+        )
+    ) LOOP
+        orderDetailID := orderDetailID + 1;
+
+        -- for debuging
+        DBMS_OUTPUT.PUT_LINE('Inserting Product: ' || rec.productid || ', Quantity: ' || rec.quantity || ', Subtotal: ' || rec.subtotal);
+
+        -- Insert into ORDER_DETAILS
+        qurry := 'INSERT INTO ORDER_DETAILS (ORDERDETAILID, ORDERID, PRODUCTID, QUANTITY, SUBTOTAL)
+                  VALUES (:1, :2, :3, :4, :5)';
+        EXECUTE IMMEDIATE qurry USING orderDetailID, orderID, rec.productid, rec.quantity, rec.subtotal;
+        
+        --deduct that much quantity from the stock
+        qurry := 'UPDATE PRODUCTS SET STOCKQUANTITY = STOCKQUANTITY - :1 WHERE PRODUCTID =:2';
+        EXECUTE IMMEDIATE qurry USING rec.quantity,rec.productid;
+
+        total := total + rec.subtotal;
+    END LOOP;
+
+    -- Update order total
+    qurry := 'UPDATE ORDERS SET TOTALAMOUNT = :1 WHERE ORDERID = :2';
+    EXECUTE IMMEDIATE qurry USING total, orderID;
+
+    COMMIT;
+    RETURN 'Order added successfully';
+
+EXCEPTION
+    WHEN OTHERS THEN
+        ROLLBACK;
+        RETURN 'Error: ' || SQLERRM;
+END;
+
+
+--- for manualy  invok the function
+set serveroutput on;
+DECLARE
+    -- Input values
+    p_orderdate      DATE := TO_DATE('2025-04-18', 'YYYY-MM-DD');
+    p_paymenttype    VARCHAR2(20) := 'Credit Card';
+    p_userid         VARCHAR2(30) := 'U5';
+    p_productjson    CLOB := '{"products":[{"productId":"103","quantity":2,"subtotal":300.0}]}';
+
+    -- Output variable
+    result VARCHAR2(200);
+BEGIN
+    -- Call the saveOrder function
+    result := saveOrder(p_orderdate, p_paymenttype, p_userid, p_productjson);
+
+    -- Output the result of the function
+    DBMS_OUTPUT.PUT_LINE(result);
+END;
+
+
+--- quick accss
+
+select * from USERS;
+select * from ORDERS;
+select * from ORDER_DETAILS;
+select * from SUPPLIERS;
+select * from CUSTOMERS;
+select * from PRODUCTS;
+
+delete from ORDERS WHERE ORDERID = 1003;
+
+--------------------------------------
+--make payment
+--------------------------------------
+--------------------------------------
+-- track order
+--------------------------------------
+
+CREATE OR REPLACE FUNCTION trackOrder(t_userID in VARCHAR2,t_orderID in VARCHAR2)
+RETURN VARCHAR2
+AS
+    t_customerID varchar2(20);
+    qurry varchar2(2000);
+    message varchar2(200);
+    mss_part varchar2(20);
+    
+BEGIN
+    qurry := 'SELECT CUSTOMERID INTO t_customerID FROM CUSTOMER WHERE USERID =:1';
+    EXECUTE IMMEDIATE qurry USING t_userID;
+    
+    
+IF t_orderID IS NOT NULL AND t_userID IS NOT NULL THEN
+        EXECUTE IMMEDIATE 'SELECT STATUS FROM ORDERS WHERE ORDERID = :1 AND USERID = :2'
+        INTO message USING t_orderID, t_userID;
+        RETURN message;
+
+    ELSIF t_userID IS NOT NULL AND t_orderID IS NULL THEN
+        EXECUTE IMMEDIATE 'SELECT ORDERID,STATUS FROM ORDERS WHERE USERID = :1 '
+        INTO message,mss_part USING t_userID;
+        RETURN message ||'/'||mss_part;
+
+    ELSE
+        RETURN 'Invalid input.';
+    END IF;
+
+EXCEPTION
+        WHEN NO_DATA_FOUND THEN
+        RETURN 'No matching record found.';
+        
+        WHEN OTHERS THEN
+        RETURN 'Error'||SQLERRM;
+END;
 
 
 

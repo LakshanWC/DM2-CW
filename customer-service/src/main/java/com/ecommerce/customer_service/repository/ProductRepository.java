@@ -15,7 +15,7 @@ import java.util.List;
 
 
 @Repository
-public class CustomerRepository{
+public class ProductRepository {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
