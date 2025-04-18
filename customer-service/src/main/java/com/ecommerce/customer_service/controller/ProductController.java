@@ -1,7 +1,6 @@
 package com.ecommerce.customer_service.controller;
 import com.ecommerce.customer_service.dto.ProductDTO;
-import com.ecommerce.customer_service.repository.CustomerRepository;
-import com.ecommerce.customer_service.service.CustomerService;
+import com.ecommerce.customer_service.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -9,12 +8,12 @@ import java.util.List;
 
 
 @RestController
-@RequestMapping("/customers")
+@RequestMapping("/products")
 @CrossOrigin(origins = "http://localhost:3000")
-public class CustomerController {
+public class ProductController {
 
     @Autowired
-    private CustomerService customerService;
+    private ProductService customerService;
 
     @GetMapping
     public List<ProductDTO> getAllProducts(
