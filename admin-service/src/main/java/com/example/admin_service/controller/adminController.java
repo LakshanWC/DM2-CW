@@ -1,17 +1,17 @@
 package com.example.admin_service.controller;
 
+import com.example.admin_service.dto.SupplierDTO;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import com.example.admin_service.service.adminService;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-import java.sql.CallableStatement;
-import java.sql.Connection;
-import java.sql.Types;
+import java.sql.*;
 import java.util.List;
 import java.util.Map;
 
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "http://localhost:3000", allowedHeaders = "*", allowCredentials = "true")
 @RestController
 @RequestMapping("/api/admin")
 public class adminController {
@@ -37,4 +37,49 @@ public class adminController {
             }
         });
     }
+
+    @GetMapping("/suppliers")
+    public List<SupplierDTO> getAllSuppliers() {
+        String sql = "SELECT s.SUPPLIERID, s.USERID, u.NAME, u.EMAIL, s.PHONENUMBER, " +
+                "s.ADDRESS, s.STATUS, u.USERNAME " +
+                "FROM SUPPLIERS s JOIN USERS u ON s.USERID = u.USERID";
+
+        return jdbcTemplate.query(sql, new SupplierRowMapper());
+    }
+
+    @PostMapping("/suppliers/{supplierId}/status")
+    public String updateSupplierStatus(
+            @PathVariable String supplierId,
+            @RequestParam String newStatus) {
+
+        String sql = "{ ? = call update_supplier_status(?, ?) }";
+
+        return jdbcTemplate.execute((Connection connection) -> {
+            try (CallableStatement cs = connection.prepareCall(sql)) {
+                cs.registerOutParameter(1, Types.VARCHAR);
+                cs.setString(2, supplierId);
+                cs.setString(3, newStatus.toUpperCase()); // Ensure uppercase
+                cs.execute();
+                return cs.getString(1);
+            }
+        });
+    }
+
+    private static class SupplierRowMapper implements RowMapper<SupplierDTO> {
+        @Override
+        public SupplierDTO mapRow(ResultSet rs, int rowNum) throws SQLException {
+            SupplierDTO supplier = new SupplierDTO();
+            supplier.setSupplierId(rs.getString("SUPPLIERID"));
+            supplier.setUserId(rs.getString("USERID"));
+            supplier.setName(rs.getString("NAME"));
+            supplier.setEmail(rs.getString("EMAIL"));
+            supplier.setPhoneNumber(rs.getString("PHONENUMBER"));
+            supplier.setAddress(rs.getString("ADDRESS"));
+            supplier.setStatus(rs.getString("STATUS"));
+            supplier.setUsername(rs.getString("USERNAME"));
+            return supplier;
+        }
+    }
 }
+
+

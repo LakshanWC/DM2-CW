@@ -5,6 +5,7 @@ import Register from "./components/Register";
 import Home from "./components/Home";
 import AdminDashboard from "./components/AdminDashboard";
 import UserManagement from "./components/UserManagement";
+import SupplierApproval from "./components/SupplierApproval";
 
 function App() {
     const [currentUser, setCurrentUser] = useState(null);
@@ -81,6 +82,12 @@ function App() {
                         path="/admin/users"
                         element={isLoggedIn && role === "admin" ?
                             <UserManagement /> :
+                            <Navigate to="/" />}
+                    />
+                    <Route
+                        path="/admin/suppliers"
+                        element={isLoggedIn && role === "admin" ?
+                            <SupplierApproval /> :
                             <Navigate to="/" />}
                     />
                 </Routes>
