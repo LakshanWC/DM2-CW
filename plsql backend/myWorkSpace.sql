@@ -84,4 +84,48 @@ select * from suppliers;
 
 delete from users where USERID ='U7';
 commit;
+-----------------------------------------
+    --get all products
+----------------------------------------
+
+CREATE OR REPLACE FUNCTION getAllProducts(
+    p_category IN VARCHAR2,
+    p_price IN NUMBER
+) RETURN SYS_REFCURSOR
+IS
+    all_product SYS_REFCURSOR;
+    v_sql       VARCHAR2(1000);
+BEGIN
+    -- Always include STATUS = 'ACTIVE'
+    v_sql := 'SELECT * FROM products WHERE STATUS = ''ACTIVE''';
+
+    IF p_category IS NOT NULL THEN
+        v_sql := v_sql || ' AND PRODUCTCATEGORY = :cat';
+    END IF;
+
+    IF p_price IS NOT NULL THEN
+        v_sql := v_sql || ' AND PRICE <= :price';  -- Updated to <= for max price
+    END IF;
+
+    IF p_category IS NOT NULL AND p_price IS NOT NULL THEN
+        OPEN all_product FOR v_sql USING p_category, p_price;
+    ELSIF p_category IS NOT NULL THEN
+        OPEN all_product FOR v_sql USING p_category;
+    ELSIF p_price IS NOT NULL THEN
+        OPEN all_product FOR v_sql USING p_price;
+    ELSE
+        OPEN all_product FOR 'SELECT * FROM products WHERE STATUS = ''ACTIVE''';
+    END IF;
+
+    RETURN all_product;
+END;
+
+
+
+
+select * from products;
+
+
+
+
 
