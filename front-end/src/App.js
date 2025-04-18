@@ -6,6 +6,7 @@ import Home from "./components/Home";
 import AdminDashboard from "./components/AdminDashboard";
 import UserManagement from "./components/UserManagement";
 import SupplierApproval from "./components/SupplierApproval";
+import PaymentHistory from "./components/PaymentHistory";
 
 function App() {
     const [currentUser, setCurrentUser] = useState(null);
@@ -88,6 +89,12 @@ function App() {
                         path="/admin/suppliers"
                         element={isLoggedIn && role === "admin" ?
                             <SupplierApproval /> :
+                            <Navigate to="/" />}
+                    />
+                    <Route
+                        path="/admin/payments"
+                        element={isLoggedIn && role === "admin" ?
+                            <PaymentHistory /> :
                             <Navigate to="/" />}
                     />
                 </Routes>

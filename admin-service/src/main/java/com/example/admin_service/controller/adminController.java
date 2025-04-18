@@ -80,6 +80,12 @@ public class adminController {
             return supplier;
         }
     }
+
+    @GetMapping("/payments")
+    public List<Map<String, Object>> getAllPayments() {
+        String sql = "SELECT paymentid, orderid, supplierid, userid, amount, paymentdate, status FROM Payments";
+        return jdbcTemplate.queryForList(sql);
+    }
 }
 
 
