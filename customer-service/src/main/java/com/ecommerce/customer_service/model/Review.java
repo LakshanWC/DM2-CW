@@ -6,27 +6,29 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document(collection = "Review")
 public class Review {
     @Id
-    private String reviewId;
-    private String userId;
+    private String id;
+    private int reviewId;
+    private String userName;
     private int productId;
     private int reviewScore;
     private String description;
     private String reviewDate;
+    private String reply;
 
-    public String getReviewId() {
+    public int getReviewId() {
         return reviewId;
     }
 
-    public void setReviewId(String reviewId) {
+    public void setReviewId(int reviewId) {
         this.reviewId = reviewId;
     }
 
-    public String getUserId() {
-        return userId;
+    public String getUserName() {
+        return userName;
     }
 
-    public void setUserId(String userId) {
-        this.userId = userId;
+    public void setUserName(String userName) {
+        this.userName = userName;
     }
 
     public int getProductId() {
@@ -59,5 +61,13 @@ public class Review {
 
     public void setReviewDate(String reviewDate) {
         this.reviewDate = reviewDate;
+    }
+
+    public String getReply() {
+        return reply;
+    }
+
+    public void setReply(String reply) {
+        this.reply = reply;
     }
 }
