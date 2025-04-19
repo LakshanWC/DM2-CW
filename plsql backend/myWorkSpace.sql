@@ -14,6 +14,8 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON SYSTEM.PAYMENTS TO apiUser;
 GRANT SELECT, INSERT, UPDATE, DELETE ON SYSTEM.DELIVERIES TO apiUser;
 GRANT EXECUTE ON SYSTEM.SAVEORDER TO apiUser;
 GRANT EXECUTE ON SYSTEM.GETDELIVERYORDERS TO apiUser;
+GRANT EXECUTE ON SYSTEM.GETALLORDERS TO apiUser;
+GRANT EXECUTE ON SYSTEM.GETALLDETAILS TO apiUser;
 GRANT EXECUTE ANY PROCEDURE TO APIUSER;
 
 
@@ -280,6 +282,70 @@ EXCEPTION
         SELECT * FROM Deliveries WHERE 1 = 0;
         RETURN result_cursor;
 END;
+
+------------------------------------
+    --view all orders for given user
+------------------------------------
+
+CREATE OR REPLACE FUNCTION getAllOrders(
+    t_userID  IN VARCHAR2
+) RETURN SYS_REFCURSOR
+AS
+    result_cursor  SYS_REFCURSOR;
+    customerId VARCHAR2(30);
+BEGIN
+    SELECT CUSTOMERID INTO customerId FROM USERS WHERE USERID = t_userID;
+
+    OPEN result_cursor FOR
+        SELECT * FROM ORDERS
+        WHERE CUSTOMERID = customerId;
+
+    RETURN result_cursor;
+
+EXCEPTION
+    WHEN OTHERS THEN
+        OPEN result_cursor FOR SELECT * FROM ORDERS WHERE 1 = 0;
+        RETURN result_cursor;
+END;
+
+
+
+
+CREATE OR REPLACE FUNCTION getAllDetails(
+    t_orderID  IN VARCHAR2
+) RETURN SYS_REFCURSOR
+AS
+    result_cursor  SYS_REFCURSOR;
+BEGIN
+    
+        OPEN result_cursor FOR
+        SELECT * FROM ORDER_DETAILS
+        WHERE ORDERID = t_orderID;
+
+    RETURN result_cursor;
+
+EXCEPTION
+    WHEN OTHERS THEN
+        OPEN result_cursor FOR
+        SELECT * FROM ORDER_DETAILS WHERE 1 = 0;
+        RETURN result_cursor;
+END;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
