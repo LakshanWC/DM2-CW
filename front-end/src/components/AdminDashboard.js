@@ -89,10 +89,10 @@ function AdminDashboard({ username }) {
                     {/* Order Management Card */}
                     <div style={styles.card} onClick={handleOrderManagement}>
                         <div style={styles.cardIcon}>
-                            <i className="fas fa-clipboard-list" style={styles.icon}></i>
+                            <i className="fas fa-boxes" style={styles.icon}></i>
                         </div>
-                        <h3 style={styles.cardTitle}>Order Management</h3>
-                        <p style={styles.cardText}>View and manage all customer orders</p>
+                        <h3 style={styles.cardTitle}>Supplier Product Management</h3>
+                        <p style={styles.cardText}>View and manage all supplier products</p>
                     </div>
                 </div>
             </main>

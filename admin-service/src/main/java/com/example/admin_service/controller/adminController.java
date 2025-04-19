@@ -86,6 +86,33 @@ public class adminController {
         String sql = "SELECT paymentid, orderid, supplierid, userid, amount, paymentdate, status FROM Payments";
         return jdbcTemplate.queryForList(sql);
     }
+
+
+    @GetMapping("/products")
+    public List<Map<String, Object>> getAllProducts() {
+        String sql = "SELECT productid, supplierid, productname, price, productcategory, " +
+                "stockquantity, description, status FROM Products";
+        return jdbcTemplate.queryForList(sql);
+    }
+
+    @PostMapping("/products/{productId}/status")
+    public String updateProductStatus(
+            @PathVariable String productId,
+            @RequestParam String newStatus) {
+
+        String sql = "{ ? = call update_product_status(?, ?) }";
+
+        return jdbcTemplate.execute((Connection connection) -> {
+            try (CallableStatement cs = connection.prepareCall(sql)) {
+                cs.registerOutParameter(1, Types.VARCHAR);
+                cs.setString(2, productId);
+                cs.setString(3, newStatus.toUpperCase());
+                cs.execute();
+                return cs.getString(1);
+            }
+        });
+    }
+
 }
 
 
