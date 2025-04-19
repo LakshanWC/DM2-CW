@@ -11,10 +11,10 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON SYSTEM.SUPPLIERS TO apiUser;
 GRANT SELECT, INSERT, UPDATE, DELETE ON SYSTEM.ORDER_DETAILS TO apiUser;
 GRANT SELECT, INSERT, UPDATE, DELETE ON SYSTEM.CUSTOMERS TO apiUser;
 GRANT SELECT, INSERT, UPDATE, DELETE ON SYSTEM.PAYMENTS TO apiUser;
+GRANT SELECT, INSERT, UPDATE, DELETE ON SYSTEM.DELIVERIES TO apiUser;
 GRANT EXECUTE ON SYSTEM.SAVEORDER TO apiUser;
-
-
-
+GRANT EXECUTE ON SYSTEM.GETDELIVERYORDERS TO apiUser;
+GRANT EXECUTE ANY PROCEDURE TO APIUSER;
 
 
 ---------------------------------
@@ -257,39 +257,28 @@ delete from ORDERS WHERE ORDERID = 1003;
 -- track order
 --------------------------------------
 
-CREATE OR REPLACE FUNCTION trackOrder(t_userID in VARCHAR2,t_orderID in VARCHAR2)
-RETURN VARCHAR2
+select * from Deliveries;
+
+
+CREATE OR REPLACE FUNCTION getDeliveryOrders(
+    t_userID  IN VARCHAR2
+) RETURN SYS_REFCURSOR
 AS
-    t_customerID varchar2(20);
-    qurry varchar2(2000);
-    message varchar2(200);
-    mss_part varchar2(20);
-    
+    result_cursor  SYS_REFCURSOR;
 BEGIN
-    qurry := 'SELECT CUSTOMERID INTO t_customerID FROM CUSTOMER WHERE USERID =:1';
-    EXECUTE IMMEDIATE qurry USING t_userID;
     
-    
-IF t_orderID IS NOT NULL AND t_userID IS NOT NULL THEN
-        EXECUTE IMMEDIATE 'SELECT STATUS FROM ORDERS WHERE ORDERID = :1 AND USERID = :2'
-        INTO message USING t_orderID, t_userID;
-        RETURN message;
+        OPEN result_cursor FOR
+        SELECT * FROM Deliveries
+        WHERE USERID = t_userID;
 
-    ELSIF t_userID IS NOT NULL AND t_orderID IS NULL THEN
-        EXECUTE IMMEDIATE 'SELECT ORDERID,STATUS FROM ORDERS WHERE USERID = :1 '
-        INTO message,mss_part USING t_userID;
-        RETURN message ||'/'||mss_part;
-
-    ELSE
-        RETURN 'Invalid input.';
-    END IF;
+    RETURN result_cursor;
 
 EXCEPTION
-        WHEN NO_DATA_FOUND THEN
-        RETURN 'No matching record found.';
-        
-        WHEN OTHERS THEN
-        RETURN 'Error'||SQLERRM;
+    WHEN OTHERS THEN
+        -- Return empty result set on any error
+        OPEN result_cursor FOR
+        SELECT * FROM Deliveries WHERE 1 = 0;
+        RETURN result_cursor;
 END;
 
 
