@@ -1,4 +1,7 @@
 package com.ecommerce.customer_service.repository;
 
-public class FeedBackRepository {
+import org.springframework.stereotype.Repository;
+
+@Repository
+public class FeedBackRepository{
 }
