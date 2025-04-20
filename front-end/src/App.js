@@ -14,13 +14,16 @@ function App() {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [username, setUsername] = useState("");
     const [role, setRole] = useState("user");
+    const [userId, setUserId] = useState("");
 
-    const handleLogin = (user, loggedIn, userRole) => {
+    const handleLogin = (user, loggedIn, userRole, userIdFromBackend) => {
         setCurrentUser(user);
         setIsLoggedIn(loggedIn);
         setRole(userRole);
+        setUserId(userIdFromBackend);
         if (loggedIn) setUsername(user);
     };
+
 
     const handleLogout = () => {
         setIsLoggedIn(false);
