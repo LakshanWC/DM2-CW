@@ -7,16 +7,16 @@ RETURN VARCHAR2
 IS
     v_db_password VARCHAR2(255);
     v_status      VARCHAR2(20);
-    v_db_role     VARCHAR2(50) := 'admin'; -- Predefined role
+    v_userid      VARCHAR2(20);
 BEGIN
-    -- Check if the role matches the predefined role
-    IF p_role != v_db_role THEN
+    -- Check if the input role is one of the allowed ones
+    IF LOWER(p_role) NOT IN ('admin', 'customer', 'supplier') THEN
         RETURN 'Invalid role';
     END IF;
 
-    -- Get the stored credentials
+    -- Fetch stored credentials
     BEGIN
-        SELECT password, status INTO v_db_password, v_status
+        SELECT userID, password, status INTO v_userid, v_db_password, v_status
         FROM USERS 
         WHERE username = p_username;
     EXCEPTION
@@ -28,11 +28,11 @@ BEGIN
             RETURN 'Error: ' || SQLERRM;
     END;
 
-    -- Perform exact comparison
+    -- Validate password and status
     IF v_db_password = p_password AND v_status = 'Active' THEN
-        RETURN 'Valid user';
+        RETURN 'Valid user|' || v_userid;
     ELSIF v_db_password = p_password THEN
-        RETURN 'User exists but not active';
+        RETURN 'User exists but not active|' || v_userid;
     ELSE
         RETURN 'Invalid password';
     END IF;

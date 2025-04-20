@@ -42,27 +42,70 @@ function Login({ handleLogin: handleParentLogin }) {
 
         try {
             if (role === "admin") {
-                const response = await axios.get("http://localhost:8081/users", {
-                    params: {
-                        username: username,
-                        password: password,
-                        role: role
-                    }
-                });
+                try {
+                    const response = await axios.get("http://localhost:8081/users", {
+                        params: {
+                            username: username,
+                            password: password,
+                            role: role
+                        }
+                    });
 
-                if (response.data === "Valid user") {
-                    handleParentLogin(username, true, "admin");
-                    navigate("/admin-dashboard");
-                } else {
+                    const data = response.data;
+
+                    if (data.startsWith("Valid user|")) {
+                        const userId = data.split("|")[1]; // Extracts 'ADMIN001', for example
+                        handleParentLogin(username, true, "admin", userId);
+                        navigate("/admin-dashboard");
+                    } else {
+                        setErrors(prev => ({
+                            ...prev,
+                            api: "Invalid admin credentials!"
+                        }));
+                    }
+                } catch (error) {
+                    console.error("Admin login error:", error);
                     setErrors(prev => ({
                         ...prev,
-                        api: "Invalid admin credentials!"
+                        api: "Server error. Please try again later."
                     }));
                 }
-            } else {
+            }
+            else if (role === "customer") {
+                try {
+                    const response = await axios.get("http://localhost:8081/users", {
+                        params: {
+                            username: username,
+                            password: password,
+                            role: role
+                        }
+                    });
+
+                    const data = response.data;
+
+                    if (data.startsWith("Valid user|")) {
+                        const userId = data.split("|")[1]; // Extracts 'U001'
+                        handleParentLogin(username, true, "customer", userId); //passing the userId
+                        navigate("/home");
+                    } else {
+                        setErrors(prev => ({
+                            ...prev,
+                            api: "Invalid customer credentials!"
+                        }));
+                    }
+                } catch (error) {
+                    console.error("Login error:", error);
+                    setErrors(prev => ({
+                        ...prev,
+                        api: "Server error. Please try again later."
+                    }));
+                }
+            }
+            else {
                 handleParentLogin(username, true, role);
                 navigate("/home");
             }
+
         } catch (error) {
             setErrors(prev => ({
                 ...prev,
