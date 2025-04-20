@@ -12,10 +12,14 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON SYSTEM.ORDER_DETAILS TO apiUser;
 GRANT SELECT, INSERT, UPDATE, DELETE ON SYSTEM.CUSTOMERS TO apiUser;
 GRANT SELECT, INSERT, UPDATE, DELETE ON SYSTEM.PAYMENTS TO apiUser;
 GRANT SELECT, INSERT, UPDATE, DELETE ON SYSTEM.DELIVERIES TO apiUser;
+GRANT SELECT, UPDATE ON SYSTEM.PRODUCTS TO apiUser;
+
 GRANT EXECUTE ON SYSTEM.SAVEORDER TO apiUser;
 GRANT EXECUTE ON SYSTEM.GETDELIVERYORDERS TO apiUser;
 GRANT EXECUTE ON SYSTEM.GETALLORDERS TO apiUser;
 GRANT EXECUTE ON SYSTEM.GETALLDETAILS TO apiUser;
+GRANT EXECUTE ON SYSTEM.GETALLPRODUCTS TO apiUser;
+
 GRANT EXECUTE ANY PROCEDURE TO APIUSER;
 
 
@@ -163,6 +167,11 @@ IS
     orderID       NUMBER := 0;
     customerID    VARCHAR2(30);
     orderDetailID NUMBER := 0;
+    supplierId    VARCHAR2(20);
+    paymentId     NUMBER;
+    p_stat        VARCHAR2(20);
+    paymentCount  NUMBER;
+    
 BEGIN
     -- Generate new Order ID
     SELECT NVL(MAX(ORDERID), 0) + 1 INTO orderID FROM ORDERS;
@@ -203,6 +212,37 @@ BEGIN
         --deduct that much quantity from the stock
         qurry := 'UPDATE PRODUCTS SET STOCKQUANTITY = STOCKQUANTITY - :1 WHERE PRODUCTID =:2';
         EXECUTE IMMEDIATE qurry USING rec.quantity,rec.productid;
+        
+        --addPayment for each supplier who suppliy the item
+        
+        --generate new paymentId
+        SELECT NVL(MAX(PAYMENTID), 0) INTO paymentId FROM PAYMENTS;
+        paymentId := paymentId +1;
+        
+        --find supplier id for the current product
+        SELECT SUPPLIERID INTO supplierId FROM PRODUCTS WHERE PRODUCTID =rec.productid;
+        
+        --check if the details are there for this orderid + supplierId or not
+        SELECT COUNT(*) INTO paymentCount FROM PAYMENTS WHERE ORDERID = orderID AND SUPPLIERID =supplierId ;
+        
+        IF p_paymenttype = 'Cash on Delivery (COD)' THEN
+            p_stat :='Pending';
+        ELSE
+            p_stat :='Completed';
+        END IF;
+            
+        IF paymentCount = 1 THEN 
+            -- UPDATE PAYMENT DATA AS THE IT IS ALREADY THERE
+            qurry :='UPDATE PAYMENTS SET AMOUNT = AMOUNT + :1 WHERE ORDERID =:2 AND SUPPLIERID =:3 ';
+            EXECUTE IMMEDIATE qurry USING rec.subtotal,orderID,supplierId;
+        
+        ELSE
+        --add the payment details AS ITS NOT HERE
+        qurry:='INSERT INTO PAYMENTS(PAYMENTID,ORDERID,SUPPLIERID,AMOUNT,PAYMENTDATE,STATUS,USERID)
+        VALUES(:1,:2,:3,:4,:5,:6,:7)';  
+        EXECUTE IMMEDIATE qurry USING paymentId,orderID,supplierId,rec.subtotal,p_orderdate,p_stat,p_userid ;
+        
+        END IF;
 
         total := total + rec.subtotal;
     END LOOP;
