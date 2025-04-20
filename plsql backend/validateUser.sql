@@ -37,7 +37,3 @@ BEGIN
         RETURN 'Invalid password';
     END IF;
 END;
-/
-
-
-/

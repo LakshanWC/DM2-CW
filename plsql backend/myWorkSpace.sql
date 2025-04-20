@@ -1,9 +1,24 @@
 ---------------------------------
--- create a user to use by the api
+-- create a user to use by the customer-servce and user-service
 ---------------------------------
 
+-- to use by user-service
+CREATE USER user_service_user IDENTIFIED BY StrongPassword123;
+
+GRANT CREATE SESSION TO user_service_user;
+GRANT CONNECT TO user_service_user;
+GRANT SELECT, INSERT, UPDATE ON SYSTEM.USERS TO user_service_user;
+GRANT SELECT, INSERT ON SYSTEM.CUSTOMERS TO user_service_user;
+GRANT SELECT, INSERT ON SYSTEM.SUPPLIERS TO user_service_user;
+GRANT EXECUTE ON SYSTEM.validateUser TO user_service_user;
+GRANT EXECUTE ON SYSTEM.createUser TO user_service_user;
+
+
+
+---this user is used by customer-service
 CREATE USER apiUser IDENTIFIED BY api123;
 GRANT CONNECT, RESOURCE TO apiUser;
+GRANT CREATE SESSION TO apiUser;
 
 GRANT SELECT, INSERT, UPDATE, DELETE ON SYSTEM.USERS TO apiUser;
 GRANT SELECT, INSERT, UPDATE, DELETE ON SYSTEM.ORDERS TO apiUser;
@@ -24,7 +39,7 @@ GRANT EXECUTE ANY PROCEDURE TO APIUSER;
 
 
 ---------------------------------
-    --user creation/registration--
+    --user creation/registration-- -- function is for user service
 ---------------------------------
 
 CREATE OR REPLACE PROCEDURE createUser(

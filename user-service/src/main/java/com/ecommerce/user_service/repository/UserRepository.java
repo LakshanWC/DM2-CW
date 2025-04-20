@@ -16,7 +16,7 @@ public class UserRepository {
     private JdbcTemplate jdbcTemplate;
 
     public String validateUser(String username, String password, String role) {
-        String query = "SELECT validateUser(?,?,?) FROM dual";
+        String query = "SELECT SYSTEM.validateUser(?,?,?) FROM dual";
         return jdbcTemplate.queryForObject(query, String.class, username, password, role);
     }
 
@@ -24,7 +24,7 @@ public class UserRepository {
                              String username, String password,
                              String phoneNo, String role) {
 
-        String sql = "{ call createUser(?, ?, ?, ?, ?, ?, ?, ?) }";
+        String sql = "{ call SYSTEM.createUser(?, ?, ?, ?, ?, ?, ?, ?) }";
 
         return jdbcTemplate.execute(
                 (CallableStatementCreator) connection -> {
