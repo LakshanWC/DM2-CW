@@ -25,6 +25,7 @@ public class UserService {
                     userDTO.getUsername(),userDTO.getPassword(),userDTO.getPhoneNo(),userDTO.getRole());
         }
         catch (Exception e) {
+            System.out.println(e.getMessage());
             return "Something went wrong server side";
         }
     }

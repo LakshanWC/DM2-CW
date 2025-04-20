@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 function Register() {
     const navigate = useNavigate();
@@ -9,60 +10,33 @@ function Register() {
         password: '',
         phone: '',
         email: '',
-        address: '', // No longer optional
-        type: 'Customer' // Default value
+        address: '',
+        type: 'Customer'
     });
 
     const [errors, setErrors] = useState({});
     const [registerHover, setRegisterHover] = useState(false);
     const [loginHover, setLoginHover] = useState(false);
-
-    const handleRegisterClick = () => {
-        //send data to database
-    }
-
-    //go back to login
-    const handleLoginClick = () => {
-        navigate("/");
-    }
+    const [responseMsg, setResponseMsg] = useState(null);
 
     const validate = () => {
         const newErrors = {};
+        if (!formData.name.trim()) newErrors.name = 'Name is required';
+        else if (formData.name.length < 2) newErrors.name = 'Name must be at least 2 characters';
 
-        if (!formData.name.trim()) {
-            newErrors.name = 'Name is required';
-        } else if (formData.name.length < 2) {
-            newErrors.name = 'Name must be at least 2 characters';
-        }
+        if (!formData.username.trim()) newErrors.username = 'Username is required';
+        else if (formData.username.length < 3) newErrors.username = 'Username must be at least 3 characters';
 
-        if (!formData.username.trim()) {
-            newErrors.username = 'Username is required';
-        } else if (formData.username.length < 3) {
-            newErrors.username = 'Username must be at least 3 characters';
-        }
+        if (!formData.password) newErrors.password = 'Password is required';
+        else if (formData.password.length < 6) newErrors.password = 'Password must be at least 6 characters';
 
-        if (!formData.password) {
-            newErrors.password = 'Password is required';
-        } else if (formData.password.length < 6) {
-            newErrors.password = 'Password must be at least 6 characters';
-        }
+        if (!formData.email) newErrors.email = 'Email is required';
+        else if (!/^\S+@\S+\.\S+$/.test(formData.email)) newErrors.email = 'Please enter a valid email address';
 
-        if (!formData.email) {
-            newErrors.email = 'Email is required';
-        } else if (!/^\S+@\S+\.\S+$/.test(formData.email)) {
-            newErrors.email = 'Please enter a valid email address';
-        }
+        if (!formData.phone) newErrors.phone = 'Phone number is required';
+        else if (!/^[0-9]{10,15}$/.test(formData.phone)) newErrors.phone = 'Enter a valid phone number (10–15 digits)';
 
-        if (!formData.phone) {
-            newErrors.phone = 'Phone number is required';
-        } else if (!/^[0-9]{10,15}$/.test(formData.phone)) {
-            newErrors.phone = 'Please enter a valid phone number (10-15 digits)';
-        }
-
-        // Making address required
-        if (!formData.address.trim()) {
-            newErrors.address = 'Address is required';
-        }
+        if (!formData.address.trim()) newErrors.address = 'Address is required';
 
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
@@ -71,7 +45,6 @@ function Register() {
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
-        // Clear error when user starts typing
         if (errors[name]) {
             setErrors(prev => ({ ...prev, [name]: '' }));
         }
@@ -81,154 +54,97 @@ function Register() {
         setFormData(prev => ({ ...prev, type }));
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
+        setResponseMsg(null);
+
         if (validate()) {
-            // Form is valid, proceed with registration
-            console.log('Registration data:', formData);
-            // Here you would typically send the data to your backend
+            const roleValue = formData.type === 'Customer' ? "1" : "2";
+
+            const payload = {
+                name: formData.name,
+                username: formData.username,
+                password: formData.password,
+                phoneNo: formData.phone,
+                email: formData.email,
+                address: formData.address,
+                role: roleValue
+            };
+
+            try {
+                const res = await axios.post("http://localhost:8081/users", payload);
+                setResponseMsg({ type: "success", text: res.data.message || "Registration successful!" });
+
+
+            } catch (error) {
+                const errMsg = error.response?.data?.message || "Registration failed. Please try again.";
+                setResponseMsg({ type: "error", text: errMsg });
+                console.error("Axios registration error:", error);
+            }
         }
+    };
+
+    const handleLoginClick = () => {
+        navigate("/");
     };
 
     return (
         <div style={styles.pageContainer}>
             <div style={styles.formContainer}>
                 <h2 style={styles.title}>Create an Account</h2>
+                {responseMsg && (
+                    <div style={{
+                        marginBottom: "16px",
+                        padding: "10px",
+                        borderRadius: "8px",
+                        color: responseMsg.type === "success" ? "#2E7D32" : "#D32F2F",
+                        backgroundColor: responseMsg.type === "success" ? "#E8F5E9" : "#FFEBEE",
+                        border: `1px solid ${responseMsg.type === "success" ? "#C8E6C9" : "#EF9A9A"}`
+                    }}>
+                        {responseMsg.text}
+                    </div>
+                )}
                 <form onSubmit={handleSubmit} style={styles.form}>
                     <div style={styles.formGroup}>
                         <label style={styles.label}>Account Type</label>
                         <div style={styles.toggleContainer}>
-                            <button
-                                type="button"
-                                style={{
-                                    ...styles.toggleOption,
-                                    ...(formData.type === 'Customer' ? styles.toggleActive : styles.toggleInactive),
-                                    borderTopRightRadius: 0,
-                                    borderBottomRightRadius: 0
-                                }}
-                                onClick={() => handleTypeChange('Customer')}
-                            >
-                                Customer
-                            </button>
-                            <button
-                                type="button"
-                                style={{
-                                    ...styles.toggleOption,
-                                    ...(formData.type === 'Supplier' ? styles.toggleActive : styles.toggleInactive),
-                                    borderTopLeftRadius: 0,
-                                    borderBottomLeftRadius: 0
-                                }}
-                                onClick={() => handleTypeChange('Supplier')}
-                            >
-                                Supplier
-                            </button>
+                            <button type="button" style={{
+                                ...styles.toggleOption,
+                                ...(formData.type === 'Customer' ? styles.toggleActive : styles.toggleInactive),
+                                borderTopRightRadius: 0,
+                                borderBottomRightRadius: 0
+                            }} onClick={() => handleTypeChange('Customer')}>Customer</button>
+                            <button type="button" style={{
+                                ...styles.toggleOption,
+                                ...(formData.type === 'Supplier' ? styles.toggleActive : styles.toggleInactive),
+                                borderTopLeftRadius: 0,
+                                borderBottomLeftRadius: 0
+                            }} onClick={() => handleTypeChange('Supplier')}>Supplier</button>
                         </div>
                     </div>
 
-                    {/* Name Field */}
-                    <div style={styles.formGroup}>
-                        <label style={styles.label}>Name</label>
-                        <input
-                            type="text"
-                            name="name"
-                            placeholder="Enter your name"
-                            style={{
-                                ...styles.input,
-                                ...(errors.name && styles.inputError)
-                            }}
-                            value={formData.name}
-                            onChange={handleChange}
-                        />
-                        {errors.name && <div style={styles.errorContainer}><span style={styles.error}>{errors.name}</span></div>}
-                    </div>
-
-                    <div style={styles.formGroup}>
-                        <label style={styles.label}>Username</label>
-                        <input
-                            type="text"
-                            name="username"
-                            placeholder="Enter username"
-                            style={{
-                                ...styles.input,
-                                ...(errors.username && styles.inputError)
-                            }}
-                            value={formData.username}
-                            onChange={handleChange}
-                        />
-                        {errors.username && <div style={styles.errorContainer}><span style={styles.error}>{errors.username}</span></div>}
-                    </div>
-
-                    <div style={styles.formGroup}>
-                        <label style={styles.label}>Password</label>
-                        <input
-                            type="password"
-                            name="password"
-                            placeholder="Enter password"
-                            style={{
-                                ...styles.input,
-                                ...(errors.password && styles.inputError)
-                            }}
-                            value={formData.password}
-                            onChange={handleChange}
-                        />
-                        {errors.password && <div style={styles.errorContainer}><span style={styles.error}>{errors.password}</span></div>}
-                    </div>
-
-                    <div style={styles.formGroup}>
-                        <label style={styles.label}>Phone Number</label>
-                        <input
-                            type="tel"
-                            name="phone"
-                            placeholder="Enter phone number"
-                            style={{
-                                ...styles.input,
-                                ...(errors.phone && styles.inputError)
-                            }}
-                            value={formData.phone}
-                            onChange={handleChange}
-                        />
-                        {errors.phone && <div style={styles.errorContainer}><span style={styles.error}>{errors.phone}</span></div>}
-                    </div>
-
-                    <div style={styles.formGroup}>
-                        <label style={styles.label}>Email</label>
-                        <input
-                            type="email"
-                            name="email"
-                            placeholder="Enter email address"
-                            style={{
-                                ...styles.input,
-                                ...(errors.email && styles.inputError)
-                            }}
-                            value={formData.email}
-                            onChange={handleChange}
-                        />
-                        {errors.email && <div style={styles.errorContainer}><span style={styles.error}>{errors.email}</span></div>}
-                    </div>
-
-                    <div style={styles.formGroup}>
-                        <label style={styles.label}>Address</label>
-                        <input
-                            type="text"
-                            name="address"
-                            placeholder="Enter your address"
-                            style={{
-                                ...styles.input,
-                                ...(errors.address && styles.inputError)
-                            }}
-                            value={formData.address}
-                            onChange={handleChange}
-                        />
-                        {errors.address && <div style={styles.errorContainer}><span style={styles.error}>{errors.address}</span></div>}
-                    </div>
+                    {["name", "username", "password", "phone", "email", "address"].map((field, idx) => (
+                        <div style={styles.formGroup} key={idx}>
+                            <label style={styles.label}>{field.charAt(0).toUpperCase() + field.slice(1).replace("No", " Number")}</label>
+                            <input
+                                type={field === "password" ? "password" : field === "email" ? "email" : "text"}
+                                name={field}
+                                placeholder={`Enter your ${field}`}
+                                style={{
+                                    ...styles.input,
+                                    ...(errors[field] && styles.inputError)
+                                }}
+                                value={formData[field]}
+                                onChange={handleChange}
+                            />
+                            {errors[field] && <div style={styles.errorContainer}><span style={styles.error}>{errors[field]}</span></div>}
+                        </div>
+                    ))}
 
                     <div style={styles.buttonGroup}>
                         <button
                             type="submit"
-                            style={{
-                                ...styles.btnRegister,
-                                ...(registerHover && styles.btnRegisterHover)
-                            }}
+                            style={{ ...styles.btnRegister, ...(registerHover && styles.btnRegisterHover) }}
                             onMouseEnter={() => setRegisterHover(true)}
                             onMouseLeave={() => setRegisterHover(false)}
                         >
@@ -236,13 +152,10 @@ function Register() {
                         </button>
                         <button
                             type="button"
-                            style={{
-                                ...styles.btnLogin,
-                                ...(loginHover && styles.btnLoginHover)
-                            }}
+                            style={{ ...styles.btnLogin, ...(loginHover && styles.btnLoginHover) }}
                             onMouseEnter={() => setLoginHover(true)}
                             onMouseLeave={() => setLoginHover(false)}
-                            onClick={() => handleLoginClick()}
+                            onClick={handleLoginClick}
                         >
                             Login
                         </button>
@@ -321,9 +234,6 @@ const styles = {
     toggleInactive: {
         backgroundColor: "white",
         color: "#555",
-        "&:hover": {
-            backgroundColor: "#f5f5f5",
-        }
     },
     input: {
         width: "100%",
