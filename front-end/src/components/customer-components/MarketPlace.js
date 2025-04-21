@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 const ProductList = () => {
     const [products, setProducts] = useState([]);
+    const navigate = useNavigate();
 
     useEffect(() => {
         axios.get('http://localhost:8082/products')
@@ -25,6 +27,7 @@ const ProductList = () => {
                             {/* Optional Image Placeholder */}
                             {/* <img src="placeholder.jpg" alt="Product" style={styles.productImage} /> */}
                             <h2 style={styles.productTitle}>{product.productName}</h2>
+                            <p><strong>Product ID:</strong> {product.productID}</p>
                             <p><strong>Category:</strong> {product.productCategory}</p>
                             <p style={styles.productPrice}>LKR {product.price.toFixed(2)}</p>
                             <p><strong>Stock:</strong> {product.stockQuantity}</p>
@@ -32,7 +35,7 @@ const ProductList = () => {
                             <p>{product.description}</p>
                             <div style={styles.buttonGroup}>
                                 <button style={styles.productButton}>Add to Cart</button>
-                                <button style={styles.buyNowButton}>Buy Now</button>
+                                <button style={styles.buyNowButton} onClick={() => navigate(`/item/${product.productID}`, { state: { product } })}>Buy Now</button>
                             </div>
                         </div>
                     ))}
