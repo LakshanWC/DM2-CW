@@ -9,6 +9,7 @@ import SupplierApproval from "./components/SupplierApproval";
 import PaymentHistory from "./components/PaymentHistory";
 import SupplierProductManagement from "./components/SupplierProductManagement";
 import MarketPlace from "./components/customer-components/MarketPlace";
+import ResetPassword from "./components/ResetPassword";
 
 function App() {
     const [currentUser, setCurrentUser] = useState(null);
@@ -111,6 +112,8 @@ function App() {
                             <SupplierProductManagement /> :
                             <Navigate to="/" />}
                     />
+
+                    <Route path="/forgot-password" element={<ResetPassword />} />
 
 
                     {/*customer part*/}

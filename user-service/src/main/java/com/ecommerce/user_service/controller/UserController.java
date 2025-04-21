@@ -25,4 +25,9 @@ public class UserController {
     public String createUser(@RequestBody UserDTO userDTO) {
         return userService.createUser(userDTO);
     }
+
+    @PatchMapping
+    public String changePassword(@RequestBody UserDTO userDTO) {
+        return userService.changePassword(userDTO);
+    }
 }

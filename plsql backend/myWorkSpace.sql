@@ -12,7 +12,7 @@ GRANT SELECT, INSERT ON SYSTEM.CUSTOMERS TO user_service_user;
 GRANT SELECT, INSERT ON SYSTEM.SUPPLIERS TO user_service_user;
 GRANT EXECUTE ON SYSTEM.validateUser TO user_service_user;
 GRANT EXECUTE ON SYSTEM.createUser TO user_service_user;
-
+GRANT EXECUTE ON SYSTEM.changePassword TO user_service_user;
 
 
 ---this user is used by customer-service
@@ -38,6 +38,36 @@ GRANT EXECUTE ON SYSTEM.GETALLPRODUCTS TO apiUser;
 GRANT EXECUTE ANY PROCEDURE TO APIUSER;
 
 
+---------------------------------
+    --user password reset
+---------------------------------
+CREATE OR REPLACE FUNCTION changePassword(u_userName in varchar2,new_password in varchar2)
+RETURN VARCHAR2
+AS
+    qurry varchar2(2000);
+    u_count number;
+BEGIN
+    SELECT COUNT(*) INTO u_count FROM USERS WHERE USERNAME = u_userName AND STATUS = 'Active';
+
+    IF u_count =1 THEN 
+    qurry := 'UPDATE USERS SET PASSWORD =:1 WHERE USERNAME =:2';
+    EXECUTE IMMEDIATE qurry USING new_password,u_userName;
+    RETURN 'Password Reset Successful';
+    ELSE
+        RETURN 'No active user found';
+    END IF;
+EXCEPTION
+    WHEN OTHERS THEN
+    RETURN 'ERROR'||SQLERRM;
+END;
+
+--do invoke teset the fucntion
+set serveroutput on;
+BEGIN
+   DBMS_OUTPUT.PUT_LINE(changePassword('lakshanwc', '12345678'));
+END;
+
+select * from users;
 ---------------------------------
     --user creation/registration-- -- function is for user service
 ---------------------------------
