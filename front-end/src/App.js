@@ -2,12 +2,13 @@ import React, { useState } from "react";
 import { BrowserRouter as Router, Route, Routes, Link, Navigate } from "react-router-dom";
 import Login from "./components/Login";
 import Register from "./components/Register";
-import Home from "./components/Home";
+import Home from "./components/customer-components/Home";
 import AdminDashboard from "./components/AdminDashboard";
 import UserManagement from "./components/UserManagement";
 import SupplierApproval from "./components/SupplierApproval";
 import PaymentHistory from "./components/PaymentHistory";
 import SupplierProductManagement from "./components/SupplierProductManagement";
+import MarketPlace from "./components/customer-components/MarketPlace";
 
 function App() {
     const [currentUser, setCurrentUser] = useState(null);
@@ -49,7 +50,10 @@ function App() {
                                 ) : (
                                     <>
                                         <NavButton to="/home" label="Dashboard" />
-                                        {role === "farmer" && <NavButton to="/my-products" label="My Products" />}
+                                        {role === "suppliers" && <NavButton to="/my-products" label="My Products" />}
+
+
+                                        
                                         {role === "customer" && <NavButton to="/marketplace" label="Marketplace" />}
                                         <NavButton to="/account" label="My Account" />
                                         <NavButton to="/orders" label="My Orders" />
@@ -106,6 +110,21 @@ function App() {
                         element={isLoggedIn && role === "admin" ?
                             <SupplierProductManagement /> :
                             <Navigate to="/" />}
+                    />
+
+
+                    {/*customer part*/}
+                    <Route
+                        path="/*"
+                        element={
+                            isLoggedIn && role === "customer" ? (
+                                <Routes>
+                                    <Route path="/marketplace" element={<MarketPlace />} />
+                                </Routes>
+                            ) : (
+                                <Navigate to="/" />
+                            )
+                        }
                     />
                 </Routes>
             </Router>

@@ -1,6 +1,14 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 
 function Home({ username, role }) {
+
+    const navigate = useNavigate();
+
+    const handleShopNowClick = () => {
+        navigate("/marketplace");
+    };
+
     return (
         <div style={styles.pageContainer}>
             {/* Hero Section */}
@@ -8,7 +16,7 @@ function Home({ username, role }) {
                 <div style={styles.heroText}>
                     <h1 style={styles.heroTitle}>Welcome to UrbanFood, {username}</h1>
                     <p style={styles.heroSubtitle}>Your go-to place for fresh, local food delivered to your door</p>
-                    <button style={styles.heroButton}>Shop Now</button>
+                    <button style={styles.heroButton} onClick={handleShopNowClick}>Shop Now</button>
                 </div>
             </section>
 

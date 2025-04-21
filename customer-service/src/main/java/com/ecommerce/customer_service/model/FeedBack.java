@@ -1,10 +1,11 @@
 package com.ecommerce.customer_service.model;
 
+import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document(collection = "FeedBack")
 public class FeedBack {
-    @id
+    @Id
     private String id;
     private int feedBackId;
     private String supplierId;

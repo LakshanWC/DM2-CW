@@ -13,7 +13,7 @@ public interface FeedBackRepository extends MongoRepository<FeedBack, String> {
 
     List<FeedBack> findAllBySupplierId(String supplierId);
 
-    Optional<FeedBack> findByFeedBackById(int feedBackId);
+    Optional<FeedBack> findByFeedBackId(int feedBackId);
 
-    int deleteFeedBackByFeedBackId(int feedBackId);
+    int deleteByFeedBackId(int feedBackId);
 }
