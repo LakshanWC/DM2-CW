@@ -29,4 +29,14 @@ public class UserService {
             return "Something went wrong server side";
         }
     }
+
+    public String changePassword(UserDTO userDTO) {
+        try{
+            return userRepository.changePassword(userDTO.getUsername(),userDTO.getPassword());
+        }
+        catch (Exception e) {
+            System.out.println(e.getMessage());
+            return "Something went wrong server side";
+        }
+    }
 }

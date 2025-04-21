@@ -7,6 +7,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.sql.CallableStatement;
+import java.sql.Connection;
 import java.sql.Types;
 
 @Repository
@@ -42,6 +43,19 @@ public class UserRepository {
                 (CallableStatementCallback<String>) cs -> {
                     cs.execute();
                     return cs.getString(8); // get the OUT message
+                }
+        );
+    }
+
+    public String changePassword(String username, String password) {
+        return jdbcTemplate.execute(
+                (Connection con) -> {
+                    CallableStatement cs = con.prepareCall("{ ? = call SYSTEM.changePassword(?, ?) }");
+                    cs.registerOutParameter(1, Types.VARCHAR);
+                    cs.setString(2, username);
+                    cs.setString(3, password);
+                    cs.execute();
+                    return cs.getString(1);
                 }
         );
     }

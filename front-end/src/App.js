@@ -9,6 +9,8 @@ import SupplierApproval from "./components/SupplierApproval";
 import PaymentHistory from "./components/PaymentHistory";
 import SupplierProductManagement from "./components/SupplierProductManagement";
 import MarketPlace from "./components/customer-components/MarketPlace";
+import ResetPassword from "./components/ResetPassword";
+import ItemPage from "./components/customer-components/ItemPage";
 
 function App() {
     const [currentUser, setCurrentUser] = useState(null);
@@ -112,6 +114,8 @@ function App() {
                             <Navigate to="/" />}
                     />
 
+                    <Route path="/forgot-password" element={<ResetPassword />} />
+
 
                     {/*customer part*/}
                     <Route
@@ -120,12 +124,15 @@ function App() {
                             isLoggedIn && role === "customer" ? (
                                 <Routes>
                                     <Route path="/marketplace" element={<MarketPlace />} />
+                                    <Route path="/item/:id" element={<ItemPage/>} />
                                 </Routes>
                             ) : (
                                 <Navigate to="/" />
                             )
                         }
                     />
+
+
                 </Routes>
             </Router>
         </div>
