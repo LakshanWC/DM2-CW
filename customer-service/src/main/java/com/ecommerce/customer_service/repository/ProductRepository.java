@@ -22,7 +22,7 @@ public class ProductRepository {
 
     public List<ProductDTO> getAllProducts(String category, Double price) {
         return jdbcTemplate.execute((CallableStatementCreator) con -> {
-            CallableStatement cstmt = con.prepareCall("{ ? = call getAllProducts(?, ?) }");
+            CallableStatement cstmt = con.prepareCall("{ ? = call SYSTEM.getAllProducts(?, ?) }");
             cstmt.registerOutParameter(1, Types.REF_CURSOR);
 
             if (category != null) cstmt.setString(2, category);

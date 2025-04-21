@@ -37,7 +37,7 @@ public class FeedBackService {
 
     public String addFeedBackReply(FeedBackDTO feedBackDTO) {
         try{
-            Optional<FeedBack> optionalFeedBack= feedBackRepository.findByFeedBackById(feedBackDTO.getFeedBackId());
+            Optional<FeedBack> optionalFeedBack= feedBackRepository.findByFeedBackId(feedBackDTO.getFeedBackId());
             if(optionalFeedBack.isPresent()){
                 FeedBack feedBack = optionalFeedBack.get();
                 feedBack.setReply(feedBackDTO.getFeedBackReply());
@@ -56,8 +56,8 @@ public class FeedBackService {
 
     public String deleteFeedBack(int feedBackId) {
         try{
-            if(feedBackRepository.findByFeedBackById(feedBackId).isPresent()){
-                feedBackRepository.deleteFeedBackByFeedBackId(feedBackId);
+            if(feedBackRepository.findByFeedBackId(feedBackId).isPresent()){
+                feedBackRepository.deleteByFeedBackId(feedBackId);
                 return "Delete success";
             }
             return "No review found with that id";
