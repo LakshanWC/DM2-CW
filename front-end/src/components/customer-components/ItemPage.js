@@ -1,28 +1,48 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
-const ItemPage = () => {
+const ItemPage = ({ currentActiveUser,userID }) => {
     const { state } = useLocation();
     const product = state?.product;
 
-    const [quantity, setQuantity] = React.useState(1);
-    const [paymentMethod, setPaymentMethod] = React.useState('Cash on Delivery');
-    const [address, setAddress] = React.useState('');
+    const [quantity, setQuantity] = useState(1);
+    const [paymentMethod, setPaymentMethod] = useState('Cash on Delivery');
+    const [address, setAddress] = useState('');
     const [reviews, setReviews] = useState([]);
+    const [newReview, setNewReview] = useState({
+        reviewScore: 5,
+        description: ''
+    });
+    const [hasUserReviewed, setHasUserReviewed] = useState(false);
 
     useEffect(() => {
         if (product?.productID) {
-            fetch(`http://localhost:8082/reviews/${product.productID}`)
-                .then(res => res.json())
-                .then(data => setReviews(data))
-                .catch(err => console.error('Failed to load reviews:', err));
+            fetchReviews();
         }
     }, [product?.productID]);
+
+    useEffect(() => {
+        // Check if current user has already reviewed this product
+        if (currentActiveUser && reviews.length > 0) {
+            const userReview = reviews.find(review => review.userName === currentActiveUser);
+            setHasUserReviewed(!!userReview);
+        } else {
+            setHasUserReviewed(false);
+        }
+    }, [reviews, currentActiveUser]);
+
+    const fetchReviews = () => {
+        fetch(`http://localhost:8082/reviews/${product.productID}`)
+            .then(res => res.json())
+            .then(data => setReviews(data))
+            .catch(err => console.error('Failed to load reviews:', err));
+    };
 
     if (!product) return <p>Product details not found.</p>;
 
     const handleOrder = () => {
         const orderDetails = {
+            userID: currentActiveUser?.userID || 'Guest',
             productID: product.productID,
             quantity,
             paymentMethod,
@@ -30,6 +50,49 @@ const ItemPage = () => {
         };
         console.log('Order Placed:', orderDetails);
         alert('Order placed successfully!');
+    };
+
+    const handleReviewSubmit = (e) => {
+        e.preventDefault();
+        if (!currentActiveUser) {
+            alert('Please log in to submit a review');
+            return;
+        }
+
+        if (hasUserReviewed) {
+            alert('You have already reviewed this product');
+            return;
+        }
+        const convertedproductID = parseInt(product?.productID, 10);
+
+        const reviewData = {
+            userName: currentActiveUser,
+            productId: convertedproductID,
+            reviewScore: newReview.reviewScore,
+            description: newReview.description,
+            reviewDate: new Date().toISOString(),
+            reply:""
+        };
+        console.log("Review data being sent:", reviewData);
+        console.log(convertedproductID);
+
+        fetch('http://localhost:8082/reviews', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(reviewData),
+        })
+            .then(response => response.json())
+            .then(() => {
+                alert('Review submitted successfully!');
+                setNewReview({ reviewScore: 5, description: '' });
+                fetchReviews();
+            })
+            .catch(error => {
+                console.error('Error submitting review:', error);
+                alert('Failed to submit review');
+            });
     };
 
     return (
@@ -52,7 +115,7 @@ const ItemPage = () => {
                             min="1"
                             max={product.stockQuantity}
                             value={quantity}
-                            onChange={(e) => setQuantity(e.target.value)}
+                            onChange={(e) => setQuantity(parseInt(e.target.value))}
                             style={styles.input}
                         />
                     </label>
@@ -83,9 +146,57 @@ const ItemPage = () => {
                 </div>
             </div>
 
-            {/* Reviews Section */}
             <div style={styles.reviewSection}>
                 <h3>Customer Reviews</h3>
+
+                {/* Review Form - Only show if user is logged in AND hasn't reviewed yet */}
+                {currentActiveUser && !hasUserReviewed ? (
+                    <div style={styles.reviewFormContainer}>
+                        <h4>Write a Review</h4>
+                        <form onSubmit={handleReviewSubmit}>
+                            <div style={styles.formGroup}>
+                                <label style={styles.formLabel}>Your Rating:</label>
+                                <select
+                                    value={newReview.reviewScore}
+                                    onChange={(e) => setNewReview({...newReview, reviewScore: parseInt(e.target.value)})}
+                                    style={styles.input}
+                                    required
+                                >
+                                    <option value="5">5</option>
+                                    <option value="4">4</option>
+                                    <option value="3">3</option>
+                                    <option value="2">2</option>
+                                    <option value="1">1</option>
+                                </select>
+                            </div>
+                            <div style={styles.formGroup}>
+                                <label style={styles.formLabel}>Your Review:</label>
+                                <textarea
+                                    rows="4"
+                                    value={newReview.description}
+                                    onChange={(e) => setNewReview({...newReview, description: e.target.value})}
+                                    style={styles.textarea}
+                                    required
+                                    placeholder="Share your experience with this product..."
+                                />
+                            </div>
+                            <button type="submit" style={styles.submitReviewButton}>
+                                Submit Review
+                            </button>
+                            <p style={styles.reviewNote}>Posting as {currentActiveUser}</p>
+                        </form>
+                    </div>
+                ) : currentActiveUser ? (
+                    <p style={{ color: '#7f8c8d', fontStyle: 'italic', marginBottom: '20px' }}>
+                        You've already reviewed this product.
+                    </p>
+                ) : (
+                    <p style={{ color: '#7f8c8d', fontStyle: 'italic', marginBottom: '20px' }}>
+                        Please log in to leave a review.
+                    </p>
+                )}
+
+                {/* Reviews List */}
                 {reviews.length === 0 ? (
                     <p>No reviews yet for this product.</p>
                 ) : (
@@ -158,6 +269,35 @@ const styles = {
     reviewSection: {
         marginTop: '40px',
         padding: '0 40px'
+    },
+    reviewFormContainer: {
+        backgroundColor: '#f8f9fa',
+        padding: '20px',
+        borderRadius: '8px',
+        marginBottom: '30px',
+        border: '1px solid #eaeaea'
+    },
+    formGroup: {
+        marginBottom: '15px'
+    },
+    formLabel: {
+        display: 'block',
+        marginBottom: '5px',
+        fontWeight: '600'
+    },
+    submitReviewButton: {
+        padding: '10px 20px',
+        backgroundColor: '#3498db',
+        color: 'white',
+        border: 'none',
+        borderRadius: '4px',
+        cursor: 'pointer',
+        fontSize: '14px'
+    },
+    reviewNote: {
+        marginTop: '10px',
+        fontSize: '12px',
+        color: '#7f8c8d'
     },
     reviewCard: {
         backgroundColor: '#fff',
