@@ -124,7 +124,7 @@ function App() {
                             isLoggedIn && role === "customer" ? (
                                 <Routes>
                                     <Route path="/marketplace" element={<MarketPlace />} />
-                                    <Route path="/item/:id" element={<ItemPage/>} />
+                                    <Route path="/item/:id" element={<ItemPage  currentActiveUser={username} userID={userId}/>} />
                                 </Routes>
                             ) : (
                                 <Navigate to="/" />
