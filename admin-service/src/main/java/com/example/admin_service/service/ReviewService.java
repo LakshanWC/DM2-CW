@@ -1,10 +1,9 @@
-package com.ecommerce.customer_service.service;
+package com.example.admin_service.service;
 
 
-
-import com.ecommerce.customer_service.dto.ReviewReplyDTO;
-import com.ecommerce.customer_service.model.Review;
-import com.ecommerce.customer_service.repository.ReviewRepository;
+import com.example.admin_service.dto.ReviewReplyDTO;
+import com.example.admin_service.model.Review;
+import com.example.admin_service.repository.ReviewRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -66,6 +65,10 @@ public class ReviewService {
             System.out.printf(e.getMessage());
             return "Unexpected error";
         }
+    }
+
+    public List<Review> getAllReviews() {
+        return reviewRepository.findAll(); // Fetch all reviews
     }
 
 }

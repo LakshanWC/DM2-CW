@@ -14,6 +14,7 @@ import ItemPage from "./components/customer-components/ItemPage";
 import OrderOverView from "./components/customer-components/OrderOverView";
 import OrderHistory from "./components/customer-components/OrderHistory";
 import OrderDelivery from "./components/customer-components/OrderDelivery";
+import ReviewManagement from "./components/ReviewManagement";
 
 function App() {
     const [currentUser, setCurrentUser] = useState(null);
@@ -132,6 +133,17 @@ function App() {
                                     <Route path="/history" element={<OrderHistory userId={userId}/>}/>
                                     <Route path="/deliveries" element={<OrderDelivery userId={userId}/>}/>
                                 </Routes>
+                            ) : (
+                                <Navigate to="/" />
+                            )
+                        }
+                    />
+
+                    <Route
+                        path="/admin/reviews"
+                        element={
+                            isLoggedIn && role === "admin" ? (
+                                <ReviewManagement />
                             ) : (
                                 <Navigate to="/" />
                             )

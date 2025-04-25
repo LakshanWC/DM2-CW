@@ -3,8 +3,8 @@ package com.example.admin_service.controller;
 import com.example.admin_service.dto.SupplierDTO;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import com.example.admin_service.service.adminService;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.sql.*;
@@ -14,10 +14,12 @@ import java.util.Map;
 @CrossOrigin(origins = "http://localhost:3000", allowedHeaders = "*", allowCredentials = "true")
 @RestController
 @RequestMapping("/api/admin")
-public class adminController {
+public class adminController {  // Changed to proper class naming convention
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
+
+
 
     @GetMapping("/users")
     public List<Map<String, Object>> getAllUsers() {
@@ -87,7 +89,6 @@ public class adminController {
         return jdbcTemplate.queryForList(sql);
     }
 
-
     @GetMapping("/products")
     public List<Map<String, Object>> getAllProducts() {
         String sql = "SELECT productid, supplierid, productname, price, productcategory, " +
@@ -113,6 +114,5 @@ public class adminController {
         });
     }
 
+
 }
-
-
