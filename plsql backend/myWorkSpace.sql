@@ -38,6 +38,7 @@ GRANT EXECUTE ON SYSTEM.GETALLPRODUCTS TO apiUser;
 GRANT EXECUTE ANY PROCEDURE TO APIUSER;
 
 
+
 ---------------------------------
     --user password reset
 ---------------------------------
@@ -368,30 +369,46 @@ EXCEPTION
         RETURN result_cursor;
 END;
 
+
+
+select * from deliveries;
+
+
 ------------------------------------
     --view all orders for given user
 ------------------------------------
-
 CREATE OR REPLACE FUNCTION getAllOrders(
-    t_userID  IN VARCHAR2
+    t_userID IN VARCHAR2
 ) RETURN SYS_REFCURSOR
 AS
-    result_cursor  SYS_REFCURSOR;
-    customerId VARCHAR2(30);
+    result_cursor SYS_REFCURSOR;
+    v_customer_id VARCHAR2(30);
 BEGIN
-    SELECT CUSTOMERID INTO customerId FROM USERS WHERE USERID = t_userID;
-
+    -- Get the customer ID 
+    BEGIN
+        SELECT CUSTOMERID INTO v_customer_id 
+        FROM CUSTOMERS 
+        WHERE USERID = t_userID;
+    EXCEPTION
+        WHEN NO_DATA_FOUND THEN
+            RETURN NULL; 
+    END;
+    
+    -- Get orders this specifc customer
     OPEN result_cursor FOR
         SELECT * FROM ORDERS
-        WHERE CUSTOMERID = customerId;
-
+        WHERE CUSTOMERID = v_customer_id;
+    
     RETURN result_cursor;
-
 EXCEPTION
     WHEN OTHERS THEN
-        OPEN result_cursor FOR SELECT * FROM ORDERS WHERE 1 = 0;
-        RETURN result_cursor;
+        RETURN NULL;
 END;
+
+select * from users;
+select * from customers;
+select * from orders;
+
 
 
 

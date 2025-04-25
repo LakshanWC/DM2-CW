@@ -11,6 +11,9 @@ import SupplierProductManagement from "./components/SupplierProductManagement";
 import MarketPlace from "./components/customer-components/MarketPlace";
 import ResetPassword from "./components/ResetPassword";
 import ItemPage from "./components/customer-components/ItemPage";
+import OrderOverView from "./components/customer-components/OrderOverView";
+import OrderHistory from "./components/customer-components/OrderHistory";
+import OrderDelivery from "./components/customer-components/OrderDelivery";
 
 function App() {
     const [currentUser, setCurrentUser] = useState(null);
@@ -125,13 +128,15 @@ function App() {
                                 <Routes>
                                     <Route path="/marketplace" element={<MarketPlace />} />
                                     <Route path="/item/:id" element={<ItemPage  currentActiveUser={username} userID={userId}/>} />
+                                    <Route path="/orders" element={<OrderOverView/>}/>
+                                    <Route path="/history" element={<OrderHistory userId={userId}/>}/>
+                                    <Route path="/deliveries" element={<OrderDelivery userId={userId}/>}/>
                                 </Routes>
                             ) : (
                                 <Navigate to="/" />
                             )
                         }
                     />
-
 
                 </Routes>
             </Router>
