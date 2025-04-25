@@ -42,39 +42,44 @@ public class OrderRepository {
     }
 
     public List<OrderDTO> getAllOrdersForCustomer(String userId) {
-        return jdbcTemplate.execute((CallableStatementCreator) con -> {
-            CallableStatement cstmt = con.prepareCall("{ ? = call SYSTEM.GETALLORDERS(?) }");
-            cstmt.registerOutParameter(1, Types.REF_CURSOR);
+        try {
+            return jdbcTemplate.execute((CallableStatementCreator) con -> {
+                CallableStatement cstmt = con.prepareCall("{ ? = call SYSTEM.GETALLORDERS(?) }");
+                cstmt.registerOutParameter(1, Types.REF_CURSOR);
 
-            if (userId != null) {
-                cstmt.setString(2, userId);
-            } else {
-                cstmt.setNull(2, Types.VARCHAR);
-            }
+                if (userId != null) {
+                    cstmt.setString(2, userId);
+                } else {
+                    cstmt.setNull(2, Types.VARCHAR);
+                }
 
-            return cstmt;
-        }, (CallableStatement cstmt) -> {
-            cstmt.execute();
-            ResultSet rs = (ResultSet) cstmt.getObject(1);
+                return cstmt;
+            }, (CallableStatement cstmt) -> {
+                cstmt.execute();
+                ResultSet rs = (ResultSet) cstmt.getObject(1);
 
-            List<OrderDTO> orders = new ArrayList<>();
+                List<OrderDTO> orders = new ArrayList<>();
 
-            while (rs.next()) {
-                OrderDTO order = new OrderDTO();
-                order.setOrderId(rs.getInt("ORDERID"));
-                order.setOrderDate(rs.getDate("ORDERDATE"));
-                order.setTotalAmount(rs.getDouble("TOTALAMOUNT"));
-                order.setStatus(rs.getString("STATUS"));
-                order.setPaymenetStatus(rs.getString("PAYMENTSTATUS"));
-                order.setPaymentType(rs.getString("PAYMENTTYPE"));
-                order.setCustomerId(rs.getString("CUSTOMERID"));
-                orders.add(order);
-            }
+                while (rs.next()) {
+                    OrderDTO order = new OrderDTO();
+                    order.setOrderId(rs.getInt("ORDERID"));
+                    order.setOrderDate(rs.getDate("ORDERDATE"));
+                    order.setTotalAmount(rs.getDouble("TOTALAMOUNT"));
+                    order.setStatus(rs.getString("STATUS"));
+                    order.setPaymenetStatus(rs.getString("PAYMENTSTATUS"));
+                    order.setPaymentType(rs.getString("PAYMENTTYPE"));
+                    order.setCustomerId(rs.getString("CUSTOMERID"));
+                    orders.add(order);
+                }
 
-            rs.close(); // good practice
+                rs.close(); // good practice
 
-            return orders;
-        });
+                return orders;
+            });
+        }catch (Exception e) {
+            System.out.println(e.getMessage());
+            return null;
+        }
     }
 
 

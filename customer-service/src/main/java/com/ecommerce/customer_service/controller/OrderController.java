@@ -33,7 +33,7 @@ public class OrderController {
         return orderService.getAllOrdersForCustomer(userId);
     }
 
-    @GetMapping("/{orderId}/details")
+    @GetMapping("/{orderId}/order-items")
     public List<OrderDetailsDTO> getAllOrderDetailsByOrderId(@PathVariable String orderId) {
         return orderService.getAllOrderDetailsByOrderId(orderId);
     }

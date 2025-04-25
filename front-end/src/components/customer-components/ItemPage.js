@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
-const ItemPage = ({ currentActiveUser,userID }) => {
+const ItemPage = ({ currentActiveUser, userID }) => {
     const { state } = useLocation();
     const product = state?.product;
 
@@ -13,7 +13,12 @@ const ItemPage = ({ currentActiveUser,userID }) => {
         reviewScore: 5,
         description: ''
     });
+    const [newFeedback, setNewFeedback] = useState({
+        feedbackType: 'Complaint', // Default feedback type
+        description: ''
+    });
     const [hasUserReviewed, setHasUserReviewed] = useState(false);
+    const [isFeedback, setIsFeedback] = useState(false); // Track if it's a feedback instead of a review
 
     useEffect(() => {
         if (product?.productID) {
@@ -22,7 +27,6 @@ const ItemPage = ({ currentActiveUser,userID }) => {
     }, [product?.productID]);
 
     useEffect(() => {
-        // Check if current user has already reviewed this product
         if (currentActiveUser && reviews.length > 0) {
             const userReview = reviews.find(review => review.userName === currentActiveUser);
             setHasUserReviewed(!!userReview);
@@ -59,39 +63,46 @@ const ItemPage = ({ currentActiveUser,userID }) => {
             return;
         }
 
-        if (hasUserReviewed) {
+        if (hasUserReviewed && !isFeedback) {
             alert('You have already reviewed this product');
             return;
         }
-        const convertedproductID = parseInt(product?.productID, 10);
 
-        const reviewData = {
+        const dataToSubmit = isFeedback ? {
             userName: currentActiveUser,
-            productId: convertedproductID,
+            productId: parseInt(product?.productID, 10),
+            feedbackType: newFeedback.feedbackType,
+            description: newFeedback.description,
+            feedbackDate: new Date().toISOString()
+        } : {
+            userName: currentActiveUser,
+            productId: parseInt(product?.productID, 10),
             reviewScore: newReview.reviewScore,
             description: newReview.description,
             reviewDate: new Date().toISOString(),
-            reply:""
+            reply: ''
         };
-        console.log("Review data being sent:", reviewData);
-        console.log(convertedproductID);
 
-        fetch('http://localhost:8082/reviews', {
+        const url = isFeedback ? 'http://localhost:8082/feedback' : 'http://localhost:8082/reviews';
+        console.log("Data being sent:", dataToSubmit);
+
+        fetch(url, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify(reviewData),
+            body: JSON.stringify(dataToSubmit),
         })
             .then(response => response.json())
             .then(() => {
-                alert('Review submitted successfully!');
+                alert(isFeedback ? 'Feedback submitted successfully!' : 'Review submitted successfully!');
                 setNewReview({ reviewScore: 5, description: '' });
+                setNewFeedback({ feedbackType: 'Complaint', description: '' });
                 fetchReviews();
             })
             .catch(error => {
-                console.error('Error submitting review:', error);
-                alert('Failed to submit review');
+                console.error('Error submitting data:', error);
+                alert('Failed to submit data');
             });
     };
 
@@ -147,10 +158,14 @@ const ItemPage = ({ currentActiveUser,userID }) => {
             </div>
 
             <div style={styles.reviewSection}>
-                <h3>Customer Reviews</h3>
+                <h3>Customer Reviews/Feedback</h3>
 
-                {/* Review Form - Only show if user is logged in AND hasn't reviewed yet */}
-                {currentActiveUser && !hasUserReviewed ? (
+                {/* Toggle between Review and Feedback */}
+                <button onClick={() => setIsFeedback(false)} style={styles.toggleButton}>Write a Review</button>
+                <button onClick={() => setIsFeedback(true)} style={styles.toggleButton}>Submit Feedback</button>
+
+                {/* Review Form */}
+                {currentActiveUser && !hasUserReviewed && !isFeedback ? (
                     <div style={styles.reviewFormContainer}>
                         <h4>Write a Review</h4>
                         <form onSubmit={handleReviewSubmit}>
@@ -186,13 +201,50 @@ const ItemPage = ({ currentActiveUser,userID }) => {
                             <p style={styles.reviewNote}>Posting as {currentActiveUser}</p>
                         </form>
                     </div>
-                ) : currentActiveUser ? (
+                ) : currentActiveUser && !isFeedback && (
                     <p style={{ color: '#7f8c8d', fontStyle: 'italic', marginBottom: '20px' }}>
                         You've already reviewed this product.
                     </p>
-                ) : (
+                )}
+
+                {/* Feedback Form */}
+                {currentActiveUser && isFeedback ? (
+                    <div style={styles.reviewFormContainer}>
+                        <h4>Submit Feedback</h4>
+                        <form onSubmit={handleReviewSubmit}>
+                            <div style={styles.formGroup}>
+                                <label style={styles.formLabel}>Feedback Type:</label>
+                                <select
+                                    value={newFeedback.feedbackType}
+                                    onChange={(e) => setNewFeedback({...newFeedback, feedbackType: e.target.value})}
+                                    style={styles.input}
+                                    required
+                                >
+                                    <option value="Complaint">Complaint</option>
+                                    <option value="Improvement">Improvement</option>
+                                    <option value="Suggestion">Suggestion</option>
+                                </select>
+                            </div>
+                            <div style={styles.formGroup}>
+                                <label style={styles.formLabel}>Your Feedback:</label>
+                                <textarea
+                                    rows="4"
+                                    value={newFeedback.description}
+                                    onChange={(e) => setNewFeedback({...newFeedback, description: e.target.value})}
+                                    style={styles.textarea}
+                                    required
+                                    placeholder="Share your feedback..."
+                                />
+                            </div>
+                            <button type="submit" style={styles.submitReviewButton}>
+                                Submit Feedback
+                            </button>
+                            <p style={styles.reviewNote}>Posting as {currentActiveUser}</p>
+                        </form>
+                    </div>
+                ) : currentActiveUser && isFeedback && (
                     <p style={{ color: '#7f8c8d', fontStyle: 'italic', marginBottom: '20px' }}>
-                        Please log in to leave a review.
+                        You've already submitted feedback for this product.
                     </p>
                 )}
 
@@ -311,5 +363,14 @@ const styles = {
         marginTop: '10px',
         color: '#2c3e50',
         fontStyle: 'italic'
+    },
+    toggleButton: {
+        padding: '10px',
+        marginRight: '10px',
+        backgroundColor: '#ccc',
+        color: 'white',
+        border: 'none',
+        borderRadius: '4px',
+        cursor: 'pointer'
     }
 };
