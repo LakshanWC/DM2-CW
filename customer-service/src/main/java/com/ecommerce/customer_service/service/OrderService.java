@@ -25,6 +25,7 @@ public class OrderService {
                 request.getOrderDate(),
                 request.getPaymentType(),
                 request.getUserId(),
+                request.getDeliveryAddress(),
                 productJson
         );
     }

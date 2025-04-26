@@ -55,6 +55,7 @@ public class DeliveryRepository {
                 delivery.setEstimatedDate(rs.getDate("ESTIMATEDDATE"));
                 delivery.setDeliveryStatus(rs.getString("DELIVERYSTATUS"));
                 delivery.setUserID(rs.getString("USERID"));
+                delivery.setDeliveryAddress(rs.getString("DELIVERYADDRESS"));
                 deliveries.add(delivery);
             }
 
