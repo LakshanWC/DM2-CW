@@ -15,6 +15,7 @@ import OrderOverView from "./components/customer-components/OrderOverView";
 import OrderHistory from "./components/customer-components/OrderHistory";
 import OrderDelivery from "./components/customer-components/OrderDelivery";
 import ReviewManagement from "./components/ReviewManagement";
+import FeedbackManagement from "./components/FeedbackManagement";
 
 function App() {
     const [currentUser, setCurrentUser] = useState(null);
@@ -144,6 +145,17 @@ function App() {
                         element={
                             isLoggedIn && role === "admin" ? (
                                 <ReviewManagement />
+                            ) : (
+                                <Navigate to="/" />
+                            )
+                        }
+                    />
+
+                    <Route
+                        path="/admin/feedbacks"
+                        element={
+                            isLoggedIn && role === "admin" ? (
+                                <FeedbackManagement />
                             ) : (
                                 <Navigate to="/" />
                             )
