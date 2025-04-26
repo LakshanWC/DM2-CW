@@ -9,6 +9,7 @@ const ItemPage = ({ currentActiveUser, userID }) => {
     const [paymentMethod, setPaymentMethod] = useState('Cash on Delivery');
     const [address, setAddress] = useState('');
     const [reviews, setReviews] = useState([]);
+    const [feedbacks, setFeedbacks] = useState([]);
     const [newReview, setNewReview] = useState({
         reviewScore: 5,
         description: ''
@@ -18,13 +19,17 @@ const ItemPage = ({ currentActiveUser, userID }) => {
         description: ''
     });
     const [hasUserReviewed, setHasUserReviewed] = useState(false);
+    const [hasUserFeedback, setHasUserFeedback] = useState(false);
     const [isFeedback, setIsFeedback] = useState(false); // Track if it's a feedback instead of a review
 
     useEffect(() => {
         if (product?.productID) {
             fetchReviews();
         }
-    }, [product?.productID]);
+        if (product?.supplierID) {
+            fetchFeedbacks();
+        }
+    }, [product?.productID, product?.supplierID]);
 
     useEffect(() => {
         if (currentActiveUser && reviews.length > 0) {
@@ -35,11 +40,27 @@ const ItemPage = ({ currentActiveUser, userID }) => {
         }
     }, [reviews, currentActiveUser]);
 
+    useEffect(() => {
+        if (currentActiveUser && feedbacks.length > 0) {
+            const userFeedback = feedbacks.find(feedback => feedback.userName === currentActiveUser);
+            setHasUserFeedback(!!userFeedback);
+        } else {
+            setHasUserFeedback(false);
+        }
+    }, [feedbacks, currentActiveUser]);
+
     const fetchReviews = () => {
         fetch(`http://localhost:8082/reviews/${product.productID}`)
             .then(res => res.json())
             .then(data => setReviews(data))
             .catch(err => console.error('Failed to load reviews:', err));
+    };
+
+    const fetchFeedbacks = () => {
+        fetch(`http://localhost:8082/feedbacks/${product.supplierID}`)
+            .then(res => res.json())
+            .then(data => setFeedbacks(data))
+            .catch(err => console.error('Failed to load feedbacks:', err));
     };
 
     if (!product) return <p>Product details not found.</p>;
@@ -68,12 +89,18 @@ const ItemPage = ({ currentActiveUser, userID }) => {
             return;
         }
 
+        if (hasUserFeedback && isFeedback) {
+            alert('You have already submitted feedback for this supplier');
+            return;
+        }
+
         const dataToSubmit = isFeedback ? {
+            supplierId: product?.supplierID,
             userName: currentActiveUser,
-            productId: parseInt(product?.productID, 10),
-            feedbackType: newFeedback.feedbackType,
-            description: newFeedback.description,
-            feedbackDate: new Date().toISOString()
+            category: newFeedback.feedbackType,
+            feedBack: newFeedback.description,
+            reply: '',
+            createdAt: new Date().toISOString()
         } : {
             userName: currentActiveUser,
             productId: parseInt(product?.productID, 10),
@@ -83,7 +110,7 @@ const ItemPage = ({ currentActiveUser, userID }) => {
             reply: ''
         };
 
-        const url = isFeedback ? 'http://localhost:8082/feedback' : 'http://localhost:8082/reviews';
+        const url = isFeedback ? 'http://localhost:8082/feedbacks' : 'http://localhost:8082/reviews';
         console.log("Data being sent:", dataToSubmit);
 
         fetch(url, {
@@ -98,7 +125,11 @@ const ItemPage = ({ currentActiveUser, userID }) => {
                 alert(isFeedback ? 'Feedback submitted successfully!' : 'Review submitted successfully!');
                 setNewReview({ reviewScore: 5, description: '' });
                 setNewFeedback({ feedbackType: 'Complaint', description: '' });
-                fetchReviews();
+                if (isFeedback) {
+                    fetchFeedbacks();
+                } else {
+                    fetchReviews();
+                }
             })
             .catch(error => {
                 console.error('Error submitting data:', error);
@@ -161,107 +192,159 @@ const ItemPage = ({ currentActiveUser, userID }) => {
                 <h3>Customer Reviews/Feedback</h3>
 
                 {/* Toggle between Review and Feedback */}
-                <button onClick={() => setIsFeedback(false)} style={styles.toggleButton}>Write a Review</button>
-                <button onClick={() => setIsFeedback(true)} style={styles.toggleButton}>Submit Feedback</button>
+                <button
+                    onClick={() => setIsFeedback(false)}
+                    style={!isFeedback ? styles.activeToggleButton : styles.toggleButton}
+                >
+                    Write a Review
+                </button>
+                <button
+                    onClick={() => setIsFeedback(true)}
+                    style={isFeedback ? styles.activeToggleButton : styles.toggleButton}
+                >
+                    Submit Feedback
+                </button>
 
                 {/* Review Form */}
-                {currentActiveUser && !hasUserReviewed && !isFeedback ? (
+                {!isFeedback && (
                     <div style={styles.reviewFormContainer}>
-                        <h4>Write a Review</h4>
-                        <form onSubmit={handleReviewSubmit}>
-                            <div style={styles.formGroup}>
-                                <label style={styles.formLabel}>Your Rating:</label>
-                                <select
-                                    value={newReview.reviewScore}
-                                    onChange={(e) => setNewReview({...newReview, reviewScore: parseInt(e.target.value)})}
-                                    style={styles.input}
-                                    required
-                                >
-                                    <option value="5">5</option>
-                                    <option value="4">4</option>
-                                    <option value="3">3</option>
-                                    <option value="2">2</option>
-                                    <option value="1">1</option>
-                                </select>
-                            </div>
-                            <div style={styles.formGroup}>
-                                <label style={styles.formLabel}>Your Review:</label>
-                                <textarea
-                                    rows="4"
-                                    value={newReview.description}
-                                    onChange={(e) => setNewReview({...newReview, description: e.target.value})}
-                                    style={styles.textarea}
-                                    required
-                                    placeholder="Share your experience with this product..."
-                                />
-                            </div>
-                            <button type="submit" style={styles.submitReviewButton}>
-                                Submit Review
-                            </button>
-                            <p style={styles.reviewNote}>Posting as {currentActiveUser}</p>
-                        </form>
+                        {currentActiveUser && !hasUserReviewed ? (
+                            <>
+                                <h4>Write a Review</h4>
+                                <form onSubmit={handleReviewSubmit}>
+                                    <div style={styles.formGroup}>
+                                        <label style={styles.formLabel}>Your Rating:</label>
+                                        <select
+                                            value={newReview.reviewScore}
+                                            onChange={(e) => setNewReview({...newReview, reviewScore: parseInt(e.target.value)})}
+                                            style={styles.input}
+                                            required
+                                        >
+                                            <option value="5">5</option>
+                                            <option value="4">4</option>
+                                            <option value="3">3</option>
+                                            <option value="2">2</option>
+                                            <option value="1">1</option>
+                                        </select>
+                                    </div>
+                                    <div style={styles.formGroup}>
+                                        <label style={styles.formLabel}>Your Review:</label>
+                                        <textarea
+                                            rows="4"
+                                            value={newReview.description}
+                                            onChange={(e) => setNewReview({...newReview, description: e.target.value})}
+                                            style={styles.textarea}
+                                            required
+                                            placeholder="Share your experience with this product..."
+                                        />
+                                    </div>
+                                    <button type="submit" style={styles.submitReviewButton}>
+                                        Submit Review
+                                    </button>
+                                    <p style={styles.reviewNote}>Posting as {currentActiveUser}</p>
+                                </form>
+                            </>
+                        ) : currentActiveUser ? (
+                            <p style={{ color: '#7f8c8d', fontStyle: 'italic', marginBottom: '20px' }}>
+                                You've already reviewed this product.
+                            </p>
+                        ) : (
+                            <p style={{ color: '#7f8c8d', fontStyle: 'italic', marginBottom: '20px' }}>
+                                Please log in to submit a review.
+                            </p>
+                        )}
                     </div>
-                ) : currentActiveUser && !isFeedback && (
-                    <p style={{ color: '#7f8c8d', fontStyle: 'italic', marginBottom: '20px' }}>
-                        You've already reviewed this product.
-                    </p>
                 )}
 
                 {/* Feedback Form */}
-                {currentActiveUser && isFeedback ? (
+                {isFeedback && (
                     <div style={styles.reviewFormContainer}>
-                        <h4>Submit Feedback</h4>
-                        <form onSubmit={handleReviewSubmit}>
-                            <div style={styles.formGroup}>
-                                <label style={styles.formLabel}>Feedback Type:</label>
-                                <select
-                                    value={newFeedback.feedbackType}
-                                    onChange={(e) => setNewFeedback({...newFeedback, feedbackType: e.target.value})}
-                                    style={styles.input}
-                                    required
-                                >
-                                    <option value="Complaint">Complaint</option>
-                                    <option value="Improvement">Improvement</option>
-                                    <option value="Suggestion">Suggestion</option>
-                                </select>
-                            </div>
-                            <div style={styles.formGroup}>
-                                <label style={styles.formLabel}>Your Feedback:</label>
-                                <textarea
-                                    rows="4"
-                                    value={newFeedback.description}
-                                    onChange={(e) => setNewFeedback({...newFeedback, description: e.target.value})}
-                                    style={styles.textarea}
-                                    required
-                                    placeholder="Share your feedback..."
-                                />
-                            </div>
-                            <button type="submit" style={styles.submitReviewButton}>
-                                Submit Feedback
-                            </button>
-                            <p style={styles.reviewNote}>Posting as {currentActiveUser}</p>
-                        </form>
+                        {currentActiveUser && !hasUserFeedback ? (
+                            <>
+                                <h4>Submit Feedback</h4>
+                                <form onSubmit={handleReviewSubmit}>
+                                    <div style={styles.formGroup}>
+                                        <label style={styles.formLabel}>Feedback Type:</label>
+                                        <select
+                                            value={newFeedback.feedbackType}
+                                            onChange={(e) => setNewFeedback({...newFeedback, feedbackType: e.target.value})}
+                                            style={styles.input}
+                                            required
+                                        >
+                                            <option value="Complaint">Complaint</option>
+                                            <option value="Improvement">Improvement</option>
+                                            <option value="Suggestion">Suggestion</option>
+                                        </select>
+                                    </div>
+                                    <div style={styles.formGroup}>
+                                        <label style={styles.formLabel}>Your Feedback:</label>
+                                        <textarea
+                                            rows="4"
+                                            value={newFeedback.description}
+                                            onChange={(e) => setNewFeedback({...newFeedback, description: e.target.value})}
+                                            style={styles.textarea}
+                                            required
+                                            placeholder="Share your feedback..."
+                                        />
+                                    </div>
+                                    <button type="submit" style={styles.submitReviewButton}>
+                                        Submit Feedback
+                                    </button>
+                                    <p style={styles.reviewNote}>Posting as {currentActiveUser}</p>
+                                </form>
+                            </>
+                        ) : currentActiveUser ? (
+                            <p style={{ color: '#7f8c8d', fontStyle: 'italic', marginBottom: '20px' }}>
+                                You've already submitted feedback for this supplier.
+                            </p>
+                        ) : (
+                            <p style={{ color: '#7f8c8d', fontStyle: 'italic', marginBottom: '20px' }}>
+                                Please log in to submit feedback.
+                            </p>
+                        )}
                     </div>
-                ) : currentActiveUser && isFeedback && (
-                    <p style={{ color: '#7f8c8d', fontStyle: 'italic', marginBottom: '20px' }}>
-                        You've already submitted feedback for this product.
-                    </p>
                 )}
 
                 {/* Reviews List */}
-                {reviews.length === 0 ? (
-                    <p>No reviews yet for this product.</p>
-                ) : (
-                    reviews.map((review) => (
-                        <div key={review.reviewId} style={styles.reviewCard}>
-                            <p><strong>{review.userName}</strong> — {new Date(review.reviewDate).toLocaleDateString()}</p>
-                            <p>⭐ {review.reviewScore} / 5</p>
-                            <p>{review.description}</p>
-                            {review.reply && (
-                                <p style={styles.reply}><strong>Seller Reply:</strong> {review.reply}</p>
-                            )}
-                        </div>
-                    ))
+                {!isFeedback && (
+                    <>
+                        <h4>Product Reviews</h4>
+                        {reviews.length === 0 ? (
+                            <p>No reviews yet for this product.</p>
+                        ) : (
+                            reviews.map((review) => (
+                                <div key={review.reviewId} style={styles.reviewCard}>
+                                    <p><strong>{review.userName}</strong> — {new Date(review.reviewDate).toLocaleDateString()}</p>
+                                    <p>⭐ {review.reviewScore} / 5</p>
+                                    <p>{review.description}</p>
+                                    {review.reply && (
+                                        <p style={styles.reply}><strong>Seller Reply:</strong> {review.reply}</p>
+                                    )}
+                                </div>
+                            ))
+                        )}
+                    </>
+                )}
+
+                {/* Feedbacks List */}
+                {isFeedback && (
+                    <>
+                        <h4>Supplier Feedbacks</h4>
+                        {feedbacks.length === 0 ? (
+                            <p>No feedbacks yet for this supplier.</p>
+                        ) : (
+                            feedbacks.map((feedback) => (
+                                <div key={feedback.feedBackId} style={styles.reviewCard}>
+                                    <p><strong>{feedback.userName}</strong> — {new Date(feedback.createdAt).toLocaleDateString()}</p>
+                                    <p>Type: {feedback.category}</p>
+                                    <p>{feedback.feedBack}</p>
+                                    {feedback.reply && (
+                                        <p style={styles.reply}><strong>Supplier Reply:</strong> {feedback.reply}</p>
+                                    )}
+                                </div>
+                            ))
+                        )}
+                    </>
                 )}
             </div>
         </div>
@@ -368,6 +451,15 @@ const styles = {
         padding: '10px',
         marginRight: '10px',
         backgroundColor: '#ccc',
+        color: 'white',
+        border: 'none',
+        borderRadius: '4px',
+        cursor: 'pointer'
+    },
+    activeToggleButton: {
+        padding: '10px',
+        marginRight: '10px',
+        backgroundColor: '#3498db',
         color: 'white',
         border: 'none',
         borderRadius: '4px',
