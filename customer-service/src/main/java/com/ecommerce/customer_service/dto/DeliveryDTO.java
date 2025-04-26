@@ -8,6 +8,7 @@ public class DeliveryDTO {
     private Date EstimatedDate;
     private String DeliveryStatus;
     private String UserID;
+    private String DeliveryAddress;
 
     public int getDeliveryID() {return DeliveryID;}
 
@@ -28,4 +29,7 @@ public class DeliveryDTO {
     public String getUserID() {return UserID;}
 
     public void setUserID(String userID) {UserID = userID;}
+
+    public String getDeliveryAddress() {return DeliveryAddress;}
+    public void setDeliveryAddress(String deliveryAddress) {DeliveryAddress = deliveryAddress;}
 }

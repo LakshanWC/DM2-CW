@@ -22,16 +22,17 @@ public class OrderRepository {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    public String saveOrder(String orderDate, String paymentType, String userId, String productJson) {
+    public String saveOrder(String orderDate, String paymentType, String userId,String deliveryAddress,String productJson) {
         System.out.println("Product JSON: " + productJson);
         return jdbcTemplate.execute(
                 (CallableStatementCreator) connection -> {
-                    CallableStatement cs = connection.prepareCall("{ ? = call SYSTEM.saveOrder(?, ?, ?, ?) }");
+                    CallableStatement cs = connection.prepareCall("{ ? = call SYSTEM.saveOrder(?, ?, ?, ?,?) }");
                     cs.registerOutParameter(1, Types.VARCHAR); // return value
                     cs.setDate(2, java.sql.Date.valueOf(orderDate));
                     cs.setString(3, paymentType);
                     cs.setString(4, userId);
-                    cs.setCharacterStream(5, new StringReader(productJson));
+                    cs.setString(5, deliveryAddress);
+                    cs.setCharacterStream(6, new StringReader(productJson));
                     return cs;
                 },
                 (CallableStatementCallback<String>) cs -> {

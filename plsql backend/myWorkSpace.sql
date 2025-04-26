@@ -152,6 +152,8 @@ END;
 select * from users;
 select * from customers;
 select * from suppliers;
+select * from deliveries;
+
 
 delete from users where USERID ='U7';
 commit;
@@ -204,6 +206,7 @@ CREATE OR REPLACE FUNCTION saveOrder(
     p_orderdate      DATE,
     p_paymenttype    VARCHAR2,
     p_userid         VARCHAR2,
+    p_deliverAddres  VARCHAR2,
     p_productjson    CLOB
 ) 
 RETURN VARCHAR2
@@ -217,6 +220,7 @@ IS
     paymentId     NUMBER;
     p_stat        VARCHAR2(20);
     paymentCount  NUMBER;
+    deliveryId    NUMBER;
     
 BEGIN
     -- Generate new Order ID
@@ -250,14 +254,17 @@ BEGIN
         -- for debuging
         DBMS_OUTPUT.PUT_LINE('Inserting Product: ' || rec.productid || ', Quantity: ' || rec.quantity || ', Subtotal: ' || rec.subtotal);
 
+        
         -- Insert into ORDER_DETAILS
         qurry := 'INSERT INTO ORDER_DETAILS (ORDERDETAILID, ORDERID, PRODUCTID, QUANTITY, SUBTOTAL)
                   VALUES (:1, :2, :3, :4, :5)';
         EXECUTE IMMEDIATE qurry USING orderDetailID, orderID, rec.productid, rec.quantity, rec.subtotal;
         
         --deduct that much quantity from the stock
-        qurry := 'UPDATE PRODUCTS SET STOCKQUANTITY = STOCKQUANTITY - :1 WHERE PRODUCTID =:2';
+        qurry := 'UPDATE PRODUCTS SET STOCKQUANTITY = STOCKQUANTITY - :1 WHERE ProductID = :2';
         EXECUTE IMMEDIATE qurry USING rec.quantity,rec.productid;
+        
+        
         
         --addPayment for each supplier who suppliy the item
         
@@ -267,6 +274,9 @@ BEGIN
         
         --find supplier id for the current product
         SELECT SUPPLIERID INTO supplierId FROM PRODUCTS WHERE PRODUCTID =rec.productid;
+        
+        qurry := 'UPDATE Order_Details SET SupplierID =:1 WHERE ProductID =:2';
+        EXECUTE IMMEDIATE qurry USING supplierId,rec.productid;
         
         --check if the details are there for this orderid + supplierId or not
         SELECT COUNT(*) INTO paymentCount FROM PAYMENTS WHERE ORDERID = orderID AND SUPPLIERID =supplierId ;
@@ -296,6 +306,14 @@ BEGIN
     -- Update order total
     qurry := 'UPDATE ORDERS SET TOTALAMOUNT = :1 WHERE ORDERID = :2';
     EXECUTE IMMEDIATE qurry USING total, orderID;
+    
+    --add data to deliveries table
+     SELECT NVL(MAX(DELIVERYID), 0) INTO deliveryId FROM DELIVERIES;
+        deliveryId := deliveryId +1;
+        
+        qurry :='INSERT INTO DELIVERIES (DELIVERYID,ORDERID,ESTIMATEDDATE,USERID,DELIVERYADDRESS)
+        VALUES (:1,:2,SYSDATE + 5,:3,:4)';
+        EXECUTE IMMEDIATE qurry USING deliveryId,orderID,p_userid,p_deliverAddres;
 
     COMMIT;
     RETURN 'Order added successfully';
@@ -314,13 +332,14 @@ DECLARE
     p_orderdate      DATE := TO_DATE('2025-04-18', 'YYYY-MM-DD');
     p_paymenttype    VARCHAR2(20) := 'Credit Card';
     p_userid         VARCHAR2(30) := 'U5';
+    p_deliverAddres  VARCHAR2(200) := '123 Main Street, Colombo'; -- Updated delivery address
     p_productjson    CLOB := '{"products":[{"productId":"103","quantity":2,"subtotal":300.0}]}';
 
     -- Output variable
     result VARCHAR2(200);
 BEGIN
     -- Call the saveOrder function
-    result := saveOrder(p_orderdate, p_paymenttype, p_userid, p_productjson);
+    result := saveOrder(p_orderdate, p_paymenttype, p_userid, p_deliverAddres, p_productjson);
 
     -- Output the result of the function
     DBMS_OUTPUT.PUT_LINE(result);
@@ -332,11 +351,16 @@ END;
 select * from USERS;
 select * from ORDERS;
 select * from ORDER_DETAILS;
+select * from deliveries;
 select * from SUPPLIERS;
 select * from CUSTOMERS;
 select * from PRODUCTS;
+select * from payments;
 
-delete from ORDERS WHERE ORDERID = 1003;
+delete from ORDERS WHERE ORDERID = 1007;
+delete from deliveries where DELIVERYID =102;
+delete from ORDER_DETAILS WHERE ORDERDETAILID =2;
+delete from PAYMENTS where ORDERID =1003;
 
 --------------------------------------
 --make payment
