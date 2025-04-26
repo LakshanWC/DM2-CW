@@ -34,7 +34,19 @@ const ProductList = () => {
                             <p><strong>Supplier:</strong> {product.supplierID}</p>
                             <p>{product.description}</p>
                             <div style={styles.buttonGroup}>
-                                <button style={styles.productButton}>Add to Cart</button>
+                                <button style={styles.productButton} onClick={() => {
+                                    // Get the existing cart from localStorage
+                                    const existingCart = JSON.parse(localStorage.getItem('cart')) || [];
+
+                                    // Add the new product to the cart
+                                    const updatedCart = [...existingCart, product];
+
+                                    // Save it back to localStorage
+                                    localStorage.setItem('cart', JSON.stringify(updatedCart));
+
+                                    // Navigate to cart page
+                                    navigate('/cart');
+                                }}>Add to Cart</button>
                                 <button style={styles.buyNowButton} onClick={() => navigate(`/item/${product.productID}`, { state: { product } })}>Buy Now</button>
                             </div>
                         </div>

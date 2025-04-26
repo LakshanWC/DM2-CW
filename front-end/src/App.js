@@ -16,6 +16,7 @@ import OrderHistory from "./components/customer-components/OrderHistory";
 import OrderDelivery from "./components/customer-components/OrderDelivery";
 import ReviewManagement from "./components/ReviewManagement";
 import FeedbackManagement from "./components/FeedbackManagement";
+import ItemCart from "./components/customer-components/ItemCart";
 
 function App() {
     const [currentUser, setCurrentUser] = useState(null);
@@ -62,7 +63,7 @@ function App() {
 
                                         
                                         {role === "customer" && <NavButton to="/marketplace" label="Marketplace" />}
-                                        <NavButton to="/account" label="My Account" />
+                                        <NavButton to="/cart" label="Cart" />
                                         <NavButton to="/orders" label="My Orders" />
                                     </>
                                 )}
@@ -133,6 +134,7 @@ function App() {
                                     <Route path="/orders" element={<OrderOverView/>}/>
                                     <Route path="/history" element={<OrderHistory userId={userId}/>}/>
                                     <Route path="/deliveries" element={<OrderDelivery userId={userId}/>}/>
+                                    <Route path="/cart" element={<ItemCart/>}/>
                                 </Routes>
                             ) : (
                                 <Navigate to="/" />
