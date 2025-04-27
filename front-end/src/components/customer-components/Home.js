@@ -2,7 +2,6 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 
 function Home({ username, role }) {
-
     const navigate = useNavigate();
 
     const handleShopNowClick = () => {
@@ -11,49 +10,12 @@ function Home({ username, role }) {
 
     return (
         <div style={styles.pageContainer}>
-            {/* Hero Section */}
+            {/* Hero Section - now fills all available space */}
             <section style={styles.heroSection}>
                 <div style={styles.heroText}>
                     <h1 style={styles.heroTitle}>Welcome to UrbanFood, {username}</h1>
                     <p style={styles.heroSubtitle}>Your go-to place for fresh, local food delivered to your door</p>
                     <button style={styles.heroButton} onClick={handleShopNowClick}>Shop Now</button>
-                </div>
-            </section>
-
-            {/* Featured Products */}
-            <section style={styles.featuredSection}>
-                <h2 style={styles.sectionTitle}>Featured Products</h2>
-                <div style={styles.productsContainer}>
-                    <div style={styles.productCard}>
-                        <img
-                            src="https://via.placeholder.com/200"
-                            alt="Product 1"
-                            style={styles.productImage}
-                        />
-                        <h3 style={styles.productTitle}>Fresh Organic Tomatoes</h3>
-                        <p style={styles.productPrice}>LKR 150</p>
-                        <button style={styles.productButton}>Add to Cart</button>
-                    </div>
-                    <div style={styles.productCard}>
-                        <img
-                            src="https://via.placeholder.com/200"
-                            alt="Product 2"
-                            style={styles.productImage}
-                        />
-                        <h3 style={styles.productTitle}>Local Green Apples</h3>
-                        <p style={styles.productPrice}>LKR 200</p>
-                        <button style={styles.productButton}>Add to Cart</button>
-                    </div>
-                    <div style={styles.productCard}>
-                        <img
-                            src="https://via.placeholder.com/200"
-                            alt="Product 3"
-                            style={styles.productImage}
-                        />
-                        <h3 style={styles.productTitle}>Fresh Carrots</h3>
-                        <p style={styles.productPrice}>LKR 120</p>
-                        <button style={styles.productButton}>Add to Cart</button>
-                    </div>
                 </div>
             </section>
 
@@ -69,17 +31,17 @@ export default Home;
 
 const styles = {
     pageContainer: {
+        display: "flex",
+        flexDirection: "column",
+        minHeight: "100vh",
         fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-        backgroundColor: "#f4f7f6",
-        color: "#333",
-        padding: "0",
         margin: "0",
     },
     heroSection: {
+        flexGrow: 1, // This makes the hero section expand to fill available space
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        height: "400px",
         background: "linear-gradient(to right, #56ab2f, #a8e063)",
         color: "white",
         textAlign: "center",
@@ -103,54 +65,6 @@ const styles = {
         padding: "12px 20px",
         borderRadius: "6px",
         fontSize: "16px",
-        cursor: "pointer",
-        transition: "background-color 0.3s",
-    },
-    featuredSection: {
-        padding: "40px 20px",
-        textAlign: "center",
-        backgroundColor: "#ffffff",
-    },
-    sectionTitle: {
-        fontSize: "28px",
-        fontWeight: "700",
-        marginBottom: "30px",
-    },
-    productsContainer: {
-        display: "flex",
-        justifyContent: "center",
-        gap: "20px",
-    },
-    productCard: {
-        backgroundColor: "#fff",
-        borderRadius: "8px",
-        boxShadow: "0 6px 16px rgba(0, 0, 0, 0.1)",
-        width: "200px",
-        padding: "15px",
-        textAlign: "center",
-    },
-    productImage: {
-        width: "100%",
-        height: "auto",
-        borderRadius: "8px",
-    },
-    productTitle: {
-        fontSize: "18px",
-        fontWeight: "600",
-        marginTop: "15px",
-    },
-    productPrice: {
-        fontSize: "16px",
-        color: "#27ae60",
-        margin: "10px 0",
-    },
-    productButton: {
-        backgroundColor: "#f39c12",
-        color: "white",
-        border: "none",
-        padding: "10px 20px",
-        borderRadius: "6px",
-        fontSize: "14px",
         cursor: "pointer",
         transition: "background-color 0.3s",
     },
