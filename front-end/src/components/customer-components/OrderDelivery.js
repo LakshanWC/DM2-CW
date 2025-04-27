@@ -5,39 +5,70 @@ const OrderDelivery = ({ userId }) => {
     const [orderId, setOrderId] = useState('');
     const [deliveries, setDeliveries] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [showDeliveries, setShowDeliveries] = useState(false); // New state to toggle visibility
+    const [showDeliveries, setShowDeliveries] = useState(false);
+    const [isInputFocused, setInputFocus] = useState(false);
 
     const handleInputChange = (event) => {
-        setOrderId(event.target.value);
+        setOrderId(event.target.value.trim()); // Trim whitespace from input
     };
 
-    const handleTrackClick = () => {
-        if (orderId) {
-            console.log(`Tracking order with ID: ${orderId} for User ID: ${userId}`);
-            // Add your logic here to track the order for the given userId
-        } else {
+    const handleTrackClick = async () => {
+        if (!orderId) {
             alert('Please enter an Order ID');
+            return;
+        }
+
+        console.log(`Tracking order with ID: ${orderId} for User ID: ${userId}`);
+        setLoading(true);
+
+        try {
+            const response = await axios.get(`http://localhost:8082/deliveries/${userId}`);
+            console.log('Full response data:', response.data);
+
+            // Convert both values to strings for comparison to avoid type issues
+            const filteredDelivery = response.data.filter(delivery =>
+                delivery.orderID.toString() === orderId.toString()
+            );
+
+            console.log('Filtered results:', filteredDelivery);
+
+            if (filteredDelivery.length === 0) {
+                alert(`No delivery found for Order ID: ${orderId}`);
+                setDeliveries([]);
+                setShowDeliveries(false);
+                return;
+            }
+
+            setDeliveries(filteredDelivery);
+            setShowDeliveries(true);
+        } catch (error) {
+            console.error('Error fetching deliveries:', error);
+            alert('Failed to fetch delivery information. Please try again.');
+        } finally {
+            setLoading(false);
         }
     };
 
     const handleViewDeliveriesClick = async () => {
         if (showDeliveries) {
-            setDeliveries([]); // Clear deliveries if we are hiding them
-            setShowDeliveries(false); // Hide the deliveries
+            setDeliveries([]);
+            setShowDeliveries(false);
         } else {
             setLoading(true);
             try {
                 const response = await axios.get(`http://localhost:8082/deliveries/${userId}`);
                 setDeliveries(response.data);
-                setShowDeliveries(true); // Show the deliveries
+                setShowDeliveries(true);
             } catch (error) {
                 console.error('Error fetching deliveries:', error);
+                alert('Failed to fetch deliveries. Please try again.');
             } finally {
                 setLoading(false);
             }
         }
     };
 
+    // Styles
     const containerStyle = {
         display: 'flex',
         flexDirection: 'column',
@@ -77,10 +108,7 @@ const OrderDelivery = ({ userId }) => {
         marginBottom: '1rem',
         outline: 'none',
         transition: 'border-color 0.3s',
-    };
-
-    const inputFocusStyle = {
-        borderColor: '#4CAF50',
+        ...(isInputFocused && { borderColor: '#4CAF50' }),
     };
 
     const buttonStyle = {
@@ -93,10 +121,9 @@ const OrderDelivery = ({ userId }) => {
         cursor: 'pointer',
         transition: 'background-color 0.3s',
         margin: '0.5rem',
-    };
-
-    const buttonHoverStyle = {
-        backgroundColor: '#45a049',
+        ':hover': {
+            backgroundColor: '#45a049',
+        },
     };
 
     const cardStyle = {
@@ -125,8 +152,6 @@ const OrderDelivery = ({ userId }) => {
         marginBottom: '0.5rem',
     };
 
-    const [isInputFocused, setInputFocus] = useState(false);
-
     return (
         <div style={containerStyle}>
             <h2 style={headingStyle}>Track Your Order</h2>
@@ -138,31 +163,29 @@ const OrderDelivery = ({ userId }) => {
                     value={orderId}
                     onChange={handleInputChange}
                     placeholder="Enter Order ID"
-                    style={{
-                        ...inputStyle,
-                        ...(isInputFocused ? inputFocusStyle : {}),
-                    }}
+                    style={inputStyle}
                     onFocus={() => setInputFocus(true)}
                     onBlur={() => setInputFocus(false)}
                 />
             </div>
-            <button
-                style={buttonStyle}
-                onClick={handleTrackClick}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = buttonHoverStyle.backgroundColor}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#4CAF50'}
-            >
-                Track
-            </button>
-
-            <button
-                style={buttonStyle}
-                onClick={handleViewDeliveriesClick}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = buttonHoverStyle.backgroundColor}
-                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#4CAF50'}
-            >
-                {showDeliveries ? 'Hide All Deliveries' : 'View All Deliveries'}
-            </button>
+            <div>
+                <button
+                    style={buttonStyle}
+                    onClick={handleTrackClick}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#45a049'}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#4CAF50'}
+                >
+                    Track
+                </button>
+                <button
+                    style={buttonStyle}
+                    onClick={handleViewDeliveriesClick}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#45a049'}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#4CAF50'}
+                >
+                    {showDeliveries ? 'Hide All Deliveries' : 'View All Deliveries'}
+                </button>
+            </div>
 
             {loading ? (
                 <p>Loading deliveries...</p>

@@ -357,10 +357,10 @@ select * from CUSTOMERS;
 select * from PRODUCTS;
 select * from payments;
 
-delete from ORDERS WHERE ORDERID = 1007;
-delete from deliveries where DELIVERYID =102;
-delete from ORDER_DETAILS WHERE ORDERDETAILID =2;
-delete from PAYMENTS where ORDERID =1003;
+delete from ORDERS WHERE ORDERID = 1003;
+delete from deliveries where DELIVERYID =103;
+delete from ORDER_DETAILS WHERE ORDERID =1004;
+delete from PAYMENTS where ORDERID =1004;
 
 --------------------------------------
 --make payment

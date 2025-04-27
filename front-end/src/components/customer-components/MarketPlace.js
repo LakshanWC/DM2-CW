@@ -17,6 +17,29 @@ const ProductList = () => {
             });
     }, []);
 
+    const addToCart = (product) => {
+        const existingCart = JSON.parse(localStorage.getItem('cart')) || [];
+
+        // Check if product already exists in cart
+        const existingItemIndex = existingCart.findIndex(item => item.productID === product.productID);
+
+        if (existingItemIndex >= 0) {
+            // Update quantity if already in cart (increment by 1)
+            const updatedCart = [...existingCart];
+            updatedCart[existingItemIndex].quantity += 1;
+            localStorage.setItem('cart', JSON.stringify(updatedCart));
+        } else {
+            // Add new item with quantity 1
+            const cartItem = {
+                ...product,
+                quantity: 1
+            };
+            localStorage.setItem('cart', JSON.stringify([...existingCart, cartItem]));
+        }
+
+        navigate('/cart');
+    };
+
     return (
         <div style={styles.pageContainer}>
             <div style={styles.featuredSection}>
@@ -24,30 +47,27 @@ const ProductList = () => {
                 <div style={styles.productsContainer}>
                     {products.map(product => (
                         <div key={product.productID} style={styles.productCard}>
-                            {/* Optional Image Placeholder */}
-                            {/* <img src="placeholder.jpg" alt="Product" style={styles.productImage} /> */}
                             <h2 style={styles.productTitle}>{product.productName}</h2>
                             <p><strong>Product ID:</strong> {product.productID}</p>
                             <p><strong>Category:</strong> {product.productCategory}</p>
                             <p style={styles.productPrice}>LKR {product.price.toFixed(2)}</p>
-                            <p><strong>Stock:</strong> {product.stockQuantity}</p>
+                            <p><strong>Available:</strong> {product.stockQuantity}</p>
                             <p><strong>Supplier:</strong> {product.supplierID}</p>
                             <p>{product.description}</p>
+
                             <div style={styles.buttonGroup}>
-                                <button style={styles.productButton} onClick={() => {
-                                    // Get the existing cart from localStorage
-                                    const existingCart = JSON.parse(localStorage.getItem('cart')) || [];
-
-                                    // Add the new product to the cart
-                                    const updatedCart = [...existingCart, product];
-
-                                    // Save it back to localStorage
-                                    localStorage.setItem('cart', JSON.stringify(updatedCart));
-
-                                    // Navigate to cart page
-                                    navigate('/cart');
-                                }}>Add to Cart</button>
-                                <button style={styles.buyNowButton} onClick={() => navigate(`/item/${product.productID}`, { state: { product } })}>Buy Now</button>
+                                <button
+                                    style={styles.productButton}
+                                    onClick={() => addToCart(product)}
+                                >
+                                    Add to Cart
+                                </button>
+                                <button
+                                    style={styles.buyNowButton}
+                                    onClick={() => navigate(`/item/${product.productID}`, { state: { product } })}
+                                >
+                                    Buy Now
+                                </button>
                             </div>
                         </div>
                     ))}
@@ -59,8 +79,6 @@ const ProductList = () => {
         </div>
     );
 };
-
-export default ProductList;
 
 const styles = {
     pageContainer: {
@@ -95,11 +113,9 @@ const styles = {
         padding: "20px",
         textAlign: "left",
         transition: "transform 0.3s",
-    },
-    productImage: {
-        width: "100%",
-        height: "auto",
-        borderRadius: "8px",
+        '&:hover': {
+            transform: "translateY(-5px)",
+        },
     },
     productTitle: {
         fontSize: "18px",
@@ -111,6 +127,7 @@ const styles = {
         fontSize: "16px",
         color: "#27ae60",
         margin: "8px 0",
+        fontWeight: "bold",
     },
     buttonGroup: {
         display: "flex",
@@ -127,6 +144,10 @@ const styles = {
         fontSize: "14px",
         cursor: "pointer",
         flex: 1,
+        transition: "background-color 0.2s",
+        '&:hover': {
+            backgroundColor: "#e67e22",
+        },
     },
     buyNowButton: {
         backgroundColor: "#27ae60",
@@ -137,15 +158,22 @@ const styles = {
         fontSize: "14px",
         cursor: "pointer",
         flex: 1,
+        transition: "background-color 0.2s",
+        '&:hover': {
+            backgroundColor: "#219653",
+        },
     },
     footer: {
         textAlign: "center",
         padding: "20px",
         backgroundColor: "#2c3e50",
         color: "white",
+        marginTop: "40px",
     },
     footerText: {
         fontSize: "14px",
         margin: "0",
     },
 };
+
+export default ProductList;
