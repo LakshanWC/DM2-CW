@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-const ItemCart = () => {
+const ItemCart = ({ userId }) => {   // <<< Accept userId as a prop here
     const [cartItems, setCartItems] = useState([]);
     const [deliveryAddress, setDeliveryAddress] = useState('');
     const [paymentMethod, setPaymentMethod] = useState('Cash on Delivery (COD)');
@@ -42,22 +42,52 @@ const ItemCart = () => {
             return;
         }
 
-        // Here you would typically send the order to your backend
-        const order = {
-            items: cartItems,
-            deliveryAddress,
-            paymentMethod,
-            total: calculateCartTotal(),
-            date: new Date().toISOString()
+        const products = cartItems.map(item => ({
+            productId: item.productID,
+            quantity: item.quantity,
+            subtotal: (item.price * item.quantity).toFixed(2),
+        }));
+
+        const orderData = {
+            orderDate: new Date().toISOString().split('T')[0],  // Format as "YYYY-MM-DD"
+            paymentType: paymentMethod,
+            userId: userId,
+            deliveryAddress: deliveryAddress,
+            products: products,
         };
 
-        console.log('Order submitted:', order);
-        alert('Order placed successfully!');
+        // Log the data to console
+        console.log('Order data:', JSON.stringify(orderData, null, 2));
 
-        // Clear cart after successful order
-        localStorage.removeItem('cart');
-        setCartItems([]);
+        // Send the order data to the backend
+        fetch('http://localhost:8082/orders', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(orderData),
+        })
+            .then(response => {
+                // Check if the response is JSON
+                const contentType = response.headers.get('Content-Type');
+                if (contentType && contentType.includes('application/json')) {
+                    return response.json();  // Parse as JSON if it's valid
+                } else {
+                    return response.text();  // Otherwise, handle it as plain text
+                }
+            })
+            .then(data => {
+                console.log('Order response:', data);
+                alert('Order successfully placed!');
+                // Optionally, you can redirect the user or clear the cart
+            })
+            .catch(error => {
+                console.error('Error placing order:', error);
+                alert('An error occurred while placing the order. Please try again.');
+            });
     };
+
+
 
     if (cartItems.length === 0) {
         return (
@@ -74,11 +104,10 @@ const ItemCart = () => {
                 <div key={index} style={styles.cartItem}>
                     <div style={styles.itemDetails}>
                         <h2 style={styles.productName}>{item.productName}</h2>
+                        <p style={styles.text}><strong>Product Id:</strong>{item.productID}</p>
                         <p style={styles.text}><strong>Unit Price:</strong> LKR {item.price.toFixed(2)}</p>
                         <p style={styles.text}><strong>Available:</strong> {item.stockQuantity}</p>
                         <p style={styles.text}><strong>Supplier ID:</strong> {item.supplierID}</p>
-
-
                         <div style={styles.quantityContainer}>
                             <button
                                 style={{

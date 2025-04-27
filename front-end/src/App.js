@@ -134,7 +134,7 @@ function App() {
                                     <Route path="/orders" element={<OrderOverView/>}/>
                                     <Route path="/history" element={<OrderHistory userId={userId}/>}/>
                                     <Route path="/deliveries" element={<OrderDelivery userId={userId}/>}/>
-                                    <Route path="/cart" element={<ItemCart/>}/>
+                                    <Route path="/cart" element={<ItemCart userId={userId}/>}/>
                                 </Routes>
                             ) : (
                                 <Navigate to="/" />
