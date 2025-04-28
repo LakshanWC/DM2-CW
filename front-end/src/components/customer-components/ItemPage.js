@@ -52,7 +52,7 @@ const ItemPage = ({ currentActiveUser, userID }) => {
 
     const fetchReviews = async () => {
         try {
-            const response = await fetch(`http://localhost:8082/reviews/${product.productID}`);
+            const response = await fetch(`http://localhost:8089/reviews/${product.productID}`);
             if (!response.ok) {
                 throw new Error('Failed to fetch reviews');
             }
@@ -66,7 +66,7 @@ const ItemPage = ({ currentActiveUser, userID }) => {
 
     const fetchFeedbacks = async () => {
         try {
-            const response = await fetch(`http://localhost:8082/feedbacks/${product.supplierID}`);
+            const response = await fetch(`http://localhost:8089/feedbacks/${product.supplierID}`);
             if (!response.ok) {
                 throw new Error('Failed to fetch feedbacks');
             }
@@ -106,7 +106,7 @@ const ItemPage = ({ currentActiveUser, userID }) => {
         };
 
         try {
-            const response = await fetch('http://localhost:8082/orders', {
+            const response = await fetch('http://localhost:8089/orders', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -176,7 +176,7 @@ const ItemPage = ({ currentActiveUser, userID }) => {
             reply: ''
         };
 
-        const url = isFeedback ? 'http://localhost:8082/feedbacks' : 'http://localhost:8082/reviews';
+        const url = isFeedback ? 'http://localhost:8089/feedbacks' : 'http://localhost:8089/reviews';
 
         try {
             const response = await fetch(url, {

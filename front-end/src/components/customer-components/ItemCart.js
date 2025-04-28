@@ -60,7 +60,7 @@ const ItemCart = ({ userId }) => {   // <<< Accept userId as a prop here
         console.log('Order data:', JSON.stringify(orderData, null, 2));
 
         // Send the order data to the backend
-        fetch('http://localhost:8082/orders', {
+        fetch('http://localhost:8089/orders', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
