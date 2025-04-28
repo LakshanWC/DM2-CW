@@ -23,4 +23,9 @@ public class ProductService {
             return null;
         }
     }
+
+    public String addProduct(ProductDTO productDTO) {
+        return customerRepository.addProduct(productDTO.getSupplierID(),productDTO.getProductName(),productDTO.getPrice()
+                ,productDTO.getProductCategory(),productDTO.getStockQuantity(),productDTO.getDescription());
+    }
 }

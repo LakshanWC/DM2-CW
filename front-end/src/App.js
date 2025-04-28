@@ -17,6 +17,7 @@ import OrderDelivery from "./components/customer-components/OrderDelivery";
 import ReviewManagement from "./components/ReviewManagement";
 import FeedbackManagement from "./components/FeedbackManagement";
 import ItemCart from "./components/customer-components/ItemCart";
+import OrdersPage from "./components/supplier-componets/pages/OrdersPage";
 
 function App() {
     const [currentUser, setCurrentUser] = useState(null);
@@ -33,7 +34,6 @@ function App() {
         if (loggedIn) setUsername(user);
     };
 
-
     const handleLogout = () => {
         setIsLoggedIn(false);
         setUsername("");
@@ -46,7 +46,10 @@ function App() {
                 {isLoggedIn && (
                     <nav style={styles.navbar}>
                         <div style={styles.navContainer}>
-                            <Link to={role === "admin" ? "/admin-dashboard" : "/home"} style={styles.navBrand}>
+                            <Link to={
+                                role === "admin" ? "/admin-dashboard" :
+                                    role === "supplier" ? "/supplier/orders" : "/home"
+                            } style={styles.navBrand}>
                                 UrbanFood
                             </Link>
                             <div style={styles.navLinks}>
@@ -55,13 +58,14 @@ function App() {
                                         <NavButton to="/admin-dashboard" label="Dashboard" />
                                         <NavButton to="/admin/users" label="User Management" />
                                     </>
+                                ) : role === "supplier" ? (
+
+                                    <>
+                                        {/* <NavButton to="/supplier/orders" label="DashBoard" />*/}
+                                    </>
                                 ) : (
                                     <>
                                         <NavButton to="/home" label="Dashboard" />
-                                        {role === "suppliers" && <NavButton to="/my-products" label="My Products" />}
-
-
-                                        
                                         {role === "customer" && <NavButton to="/marketplace" label="Marketplace" />}
                                         <NavButton to="/cart" label="Cart" />
                                         <NavButton to="/orders" label="My Orders" />
@@ -79,9 +83,9 @@ function App() {
                     <Route
                         path="/"
                         element={isLoggedIn ?
-                            (role === "admin" ?
-                                <Navigate to="/admin-dashboard" /> :
-                                <Navigate to="/home" />) :
+                            (role === "admin" ? <Navigate to="/admin-dashboard" /> :
+                                role === "supplier" ? <Navigate to="/supplier/orders" /> :
+                                    <Navigate to="/home" />) :
                             <Login handleLogin={handleLogin} />}
                     />
                     <Route path="/register" element={<Register />} />
@@ -122,19 +126,33 @@ function App() {
 
                     <Route path="/forgot-password" element={<ResetPassword />} />
 
-
-                    {/*customer part*/}
+                    {/* Customer routes */}
                     <Route
                         path="/*"
                         element={
                             isLoggedIn && role === "customer" ? (
                                 <Routes>
                                     <Route path="/marketplace" element={<MarketPlace />} />
-                                    <Route path="/item/:id" element={<ItemPage  currentActiveUser={username} userID={userId}/>} />
+                                    <Route path="/item/:id" element={<ItemPage currentActiveUser={username} userID={userId}/>} />
                                     <Route path="/orders" element={<OrderOverView/>}/>
                                     <Route path="/history" element={<OrderHistory userId={userId}/>}/>
                                     <Route path="/deliveries" element={<OrderDelivery userId={userId}/>}/>
                                     <Route path="/cart" element={<ItemCart userId={userId}/>}/>
+                                </Routes>
+                            ) : (
+                                <Navigate to="/" />
+                            )
+                        }
+                    />
+
+                    {/* Supplier routes */}
+                    <Route
+                        path="/supplier/*"
+                        element={
+                            isLoggedIn && role === "supplier" ? (
+                                <Routes>
+                                    <Route path="/orders" element={<OrdersPage userId={userId} />} />
+                                    {/* other supplier routes if any */}
                                 </Routes>
                             ) : (
                                 <Navigate to="/" />
@@ -163,7 +181,6 @@ function App() {
                             )
                         }
                     />
-
                 </Routes>
             </Router>
         </div>

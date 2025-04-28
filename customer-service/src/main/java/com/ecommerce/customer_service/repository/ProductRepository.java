@@ -56,4 +56,31 @@ public class ProductRepository {
     }
 
 
+    public String addProduct(String supplierID, String productName, Double price, String productCategory, Integer stockQuantity, String description) {
+        return jdbcTemplate.execute((CallableStatementCreator) con -> {
+            CallableStatement cstmt = con.prepareCall("{ ? = call SYSTEM.addProduct(?, ?, ?, ?, ?, ?) }");
+            cstmt.registerOutParameter(1, Types.VARCHAR); // Return value
+
+            cstmt.setString(2, supplierID);
+            cstmt.setString(3, productName);
+
+            if (price != null) cstmt.setDouble(4, price);
+            else cstmt.setNull(4, Types.NUMERIC);
+
+            cstmt.setString(5, productCategory);
+
+            if (stockQuantity != null) cstmt.setInt(6, stockQuantity);
+            else cstmt.setNull(6, Types.INTEGER);
+
+            cstmt.setString(7, description);
+
+            return cstmt;
+        }, (CallableStatement cstmt) -> {
+            cstmt.execute();
+            return cstmt.getString(1); // Return the message from PL/SQL function
+        });
+    }
+
+
+
 }

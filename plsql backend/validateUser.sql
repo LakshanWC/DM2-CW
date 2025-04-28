@@ -8,17 +8,14 @@ IS
     v_db_password VARCHAR2(255);
     v_status      VARCHAR2(20);
     v_userid      VARCHAR2(20);
+    v_roletype    VARCHAR2(20);
 BEGIN
-    -- Check if the input role is one of the allowed ones
-    IF LOWER(p_role) NOT IN ('admin', 'customer', 'supplier') THEN
-        RETURN 'Invalid role';
-    END IF;
-
-    -- Fetch stored credentials
+    -- Fetch stored credentials and user role from USERS and ROLES tables
     BEGIN
-        SELECT userID, password, status INTO v_userid, v_db_password, v_status
-        FROM USERS 
-        WHERE username = p_username;
+        SELECT u.userID, u.password, r.roleType, u.status INTO v_userid, v_db_password, v_roletype, v_status
+        FROM USERS u
+        JOIN ROLES r ON u.userID = r.userID
+        WHERE u.username = p_username;
     EXCEPTION
         WHEN NO_DATA_FOUND THEN
             RETURN 'Invalid user (not found)';
@@ -28,8 +25,10 @@ BEGIN
             RETURN 'Error: ' || SQLERRM;
     END;
 
-    -- Validate password and status
-    IF v_db_password = p_password AND v_status = 'Active' THEN
+    -- Validate role and status
+    IF LOWER(p_role) != LOWER(v_roletype) THEN
+        RETURN 'Role mismatch';
+    ELSIF v_db_password = p_password AND v_status = 'Active' THEN
         RETURN 'Valid user|' || v_userid;
     ELSIF v_db_password = p_password THEN
         RETURN 'User exists but not active|' || v_userid;
@@ -37,3 +36,4 @@ BEGIN
         RETURN 'Invalid password';
     END IF;
 END;
+

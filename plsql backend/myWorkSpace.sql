@@ -27,13 +27,14 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON SYSTEM.ORDER_DETAILS TO apiUser;
 GRANT SELECT, INSERT, UPDATE, DELETE ON SYSTEM.CUSTOMERS TO apiUser;
 GRANT SELECT, INSERT, UPDATE, DELETE ON SYSTEM.PAYMENTS TO apiUser;
 GRANT SELECT, INSERT, UPDATE, DELETE ON SYSTEM.DELIVERIES TO apiUser;
-GRANT SELECT, UPDATE ON SYSTEM.PRODUCTS TO apiUser;
+GRANT SELECT, INSERT,UPDATE ON SYSTEM.PRODUCTS TO apiUser;
 
 GRANT EXECUTE ON SYSTEM.SAVEORDER TO apiUser;
 GRANT EXECUTE ON SYSTEM.GETDELIVERYORDERS TO apiUser;
 GRANT EXECUTE ON SYSTEM.GETALLORDERS TO apiUser;
 GRANT EXECUTE ON SYSTEM.GETALLDETAILS TO apiUser;
 GRANT EXECUTE ON SYSTEM.GETALLPRODUCTS TO apiUser;
+GRANT EXECUTE ON SYSTEM.addProduct TO apiUser;
 
 GRANT EXECUTE ANY PROCEDURE TO APIUSER;
 
@@ -90,6 +91,8 @@ AS
     count_val NUMBER;
     qurry    VARCHAR2(2000);
     status   VARCHAR2(20);
+    role_id  NUMBER;
+    roleType VARCHAR(30);
 BEGIN
     -- Check if username already exists
     SELECT COUNT(*) INTO u_result FROM USERS WHERE USERNAME = u_userName;
@@ -117,6 +120,19 @@ BEGIN
         qurry := 'INSERT INTO CUSTOMERS(CUSTOMERID, USERID, PHONENUMBER, DELIVERYADDRESS) 
                   VALUES(:1, :2, :3, :4)';
         EXECUTE IMMEDIATE qurry USING new_id, new_uid, u_phoneNo, u_address;
+        
+        
+         --add data to role tabel
+        SELECT NVL(MAX(ROLEID), 0) INTO role_id FROM ROLES;
+        role_id := role_id +1;
+        
+        roleType := 'Customer';
+        status :='Active';
+        
+        qurry :='INSERT INTO ROLES(ROLEID,USERID,ROLETYPE,STATUS)
+        VALUES(:1,:2,:3,:4)';
+        EXECUTE IMMEDIATE qurry USING role_id,new_uid,roleType,status;
+        
 
         message := 'Registration successful';
 
@@ -134,6 +150,18 @@ BEGIN
         qurry := 'INSERT INTO SUPPLIERS(SUPPLIERID, USERID, PHONENUMBER, ADDRESS, STATUS) 
                   VALUES(:1, :2, :3, :4, :5)';
         EXECUTE IMMEDIATE qurry USING new_id, new_uid, u_phoneNo, u_address, status;
+        
+        --add data to role tabel
+        SELECT NVL(MAX(ROLEID), 0) INTO role_id FROM ROLES;
+        role_id := role_id +1;
+        
+        roleType := 'Supplier';
+        status :='Active';
+        
+        qurry :='INSERT INTO ROLES(ROLEID,USERID,ROLETYPE,STATUS)
+        VALUES(:1,:2,:3,:4)';
+        EXECUTE IMMEDIATE qurry USING role_id,new_uid,roleType,status;
+        
 
         message := 'Registration successful, your account will be activated by the admin after review';
     END IF;
@@ -153,6 +181,7 @@ select * from users;
 select * from customers;
 select * from suppliers;
 select * from deliveries;
+select * from roles;
 
 
 delete from users where USERID ='U7';
@@ -228,11 +257,12 @@ BEGIN
 
     -- Get customer ID
     SELECT CUSTOMERID INTO customerID FROM CUSTOMERS WHERE USERID = p_userid;
+    p_stat:='Completed';
 
     -- Insert blank order record first
-    qurry := 'INSERT INTO ORDERS (ORDERID, ORDERDATE, TOTALAMOUNT, PAYMENTTYPE, CUSTOMERID) 
-              VALUES (:1, :2, :3, :4, :5)';
-    EXECUTE IMMEDIATE qurry USING orderID, p_orderdate, total, p_paymenttype, customerID;
+    qurry := 'INSERT INTO ORDERS (ORDERID, ORDERDATE, TOTALAMOUNT, PAYMENTTYPE, CUSTOMERID,PaymentStatus) 
+              VALUES (:1, :2, :3, :4, :5,:6)';
+    EXECUTE IMMEDIATE qurry USING orderID, p_orderdate, total, p_paymenttype, customerID,p_stat;
 
     -- Get last ORDERDETAILID
     SELECT NVL(MAX(ORDERDETAILID), 0) INTO orderDetailID FROM ORDER_DETAILS;
@@ -282,7 +312,7 @@ BEGIN
         SELECT COUNT(*) INTO paymentCount FROM PAYMENTS WHERE ORDERID = orderID AND SUPPLIERID =supplierId ;
         
         IF p_paymenttype = 'Cash on Delivery (COD)' THEN
-            p_stat :='Pending';
+            p_stat :='Completed';
         ELSE
             p_stat :='Completed';
         END IF;
@@ -458,7 +488,7 @@ EXCEPTION
 END;
 
 
-
+select * from products;
 
 
 

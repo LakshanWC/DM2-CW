@@ -7,7 +7,7 @@ const ProductList = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        axios.get('http://localhost:8082/products')
+        axios.get('http://localhost:8089/products')
             .then(response => {
                 const activeProducts = response.data.filter(p => p.status === 'ACTIVE');
                 setProducts(activeProducts);

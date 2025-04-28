@@ -11,7 +11,7 @@ const OrderHistory = ({ userId }) => {
     useEffect(() => {
         const fetchOrderHistory = async () => {
             try {
-                const response = await axios.get(`http://localhost:8082/orders/${userId}`);
+                const response = await axios.get(`http://localhost:8089/orders/${userId}`);
                 setOrders(response.data);
             } catch (err) {
                 setError(err.message);
@@ -31,7 +31,7 @@ const OrderHistory = ({ userId }) => {
             setSelectedOrderId(null);
         } else {
             try {
-                const response = await axios.get(`http://localhost:8082/orders/${orderId}/order-items`);
+                const response = await axios.get(`http://localhost:8089/orders/${orderId}/order-items`);
                 setOrderItems(response.data);
                 setSelectedOrderId(orderId);
             } catch (err) {

@@ -22,5 +22,9 @@ public class ProductController {
         return customerService.getAllProducts(category,price);
     }
 
+    @PostMapping
+    public String addProduct(@RequestBody ProductDTO productDTO) {
+        return customerService.addProduct(productDTO);
+    }
 
 }

@@ -22,7 +22,7 @@ const OrderDelivery = ({ userId }) => {
         setLoading(true);
 
         try {
-            const response = await axios.get(`http://localhost:8082/deliveries/${userId}`);
+            const response = await axios.get(`http://localhost:8089/deliveries/${userId}`);
             console.log('Full response data:', response.data);
 
             // Convert both values to strings for comparison to avoid type issues
@@ -56,7 +56,7 @@ const OrderDelivery = ({ userId }) => {
         } else {
             setLoading(true);
             try {
-                const response = await axios.get(`http://localhost:8082/deliveries/${userId}`);
+                const response = await axios.get(`http://localhost:8089/deliveries/${userId}`);
                 setDeliveries(response.data);
                 setShowDeliveries(true);
             } catch (error) {
