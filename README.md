@@ -2,6 +2,9 @@
 
 An advanced e-commerce web application built with a microservices architecture. This platform separates business logic using Oracle PL/SQL and handles dynamic user-generated content such as reviews and feedback through MongoDB.
 
+## 📷 Demo
+https://www.linkedin.com/posts/lakshan-wc-b02993344_ecommerce-plsql-oracledatabase-activity-7343648576134127616-LCan?utm_source=share&utm_medium=member_desktop&rcm=ACoAAFZJX3IBioLocbta1ZfY8ykNmX4Zq8lv6us
+
 ## 🚀 Features
 
 - 👤 **Role-Based Access**: Customers and Sellers have distinct interfaces and capabilities
