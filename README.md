@@ -32,7 +32,7 @@ An advanced e-commerce web application built with a microservices architecture. 
 - **API Layer**: REST (Spring Web)
 - **Security**: Oracle DB user accounts per service
 
-##👨‍💻 Contributors
+## 👨‍💻 Contributors
 - https://github.com/LakshanWC
 - https://github.com/SamiduSamarasinghe
 - https://github.com/Shady0101
