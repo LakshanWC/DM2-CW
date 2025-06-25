@@ -33,7 +33,7 @@ An advanced e-commerce web application built with a microservices architecture. 
 - **Security**: Oracle DB user accounts per service
 
 ## 👨‍💻 Contributors
-- https://github.com/LakshanWC
-- https://github.com/SamiduSamarasinghe
-- https://github.com/Shady0101
-- https://github.com/rukaboy
+- [Samidu](https://github.com/SamiduSamarasinghe)
+- [Lakshan](https://github.com/LakshanWC)
+- [Wasath](https://github.com/Shady0101)
+- [Rukshan](https://github.com/rukaboy)
